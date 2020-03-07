@@ -1,6 +1,9 @@
 #!/bin/bash
 
 TMP_FILE="/tmp/killer.pid"
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+NC="\033[0m"
 
 func_help()
 {
@@ -29,6 +32,27 @@ func_check_ip()
     return $RESULT
 }
 
+func_check_prerequires()
+{
+	local ALL_PACKAGE_INSTALLED=1
+	echo "Checking required packages..."
+	for i in $(echo "macchanger|arpspoof" | tr "|" " ")
+	do
+		IS_PACKAGE_EXIST=$(dpkg-query -W --showformat='${Status}\n' $i 2>/dev/null | grep -c "ok installed")
+		if [[ $IS_PACKAGE_EXIST == " " ]]
+		then
+			printf "[required] ${RED}$i not installed$NC\n"
+			ALL_PACKAGE_INSTALLED=0
+		else
+			printf "[required] ${GREEN}$i installed$NC\n"
+		fi
+
+	done
+	if [[ ! $ALL_PACKAGE_INSTALLED ]]
+	then
+		exit 1
+	fi
+}
 
 
 if [[ $EUID -ne 0 ]] 
@@ -36,6 +60,7 @@ then
     echo -e "\n ERR: You must run this script as root.\n"
     exit 1
 fi
+
 
 ACTION=$1
 INET=$2
@@ -48,6 +73,8 @@ case $ACTION in
     start|stop) ;;
     *) func_help && exit 1;;
 esac
+
+func_check_prerequires
 
 if [[ $ACTION == "stop" ]]
 then
