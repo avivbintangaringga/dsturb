@@ -29,6 +29,8 @@ func_check_ip()
     return $RESULT
 }
 
+
+
 if [[ $EUID -ne 0 ]] 
 then 
     echo -e "\n ERR: You must run this script as root.\n"
@@ -52,6 +54,7 @@ then
     if [[ -f $TMP_FILE ]]
     then
         echo -e "\n [*] Stopping all process..."
+    	sysctl -q net.ipv4.ip_forward=0
         for PID in `cat $TMP_FILE`
         do
             echo -e "     * Stopping $PID..."
