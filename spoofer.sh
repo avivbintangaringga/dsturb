@@ -41,10 +41,10 @@ func_check_prerequires()
 		IS_PACKAGE_EXIST=$(dpkg-query -W --showformat='${Status}\n' $i 2>/dev/null | grep -c "ok installed")
 		if [[ $IS_PACKAGE_EXIST == " " ]]
 		then
-			printf "[required] ${RED}$i not installed$NC\n"
+			printf "[error] ${RED}$i not installed$NC\n"
 			ALL_PACKAGE_INSTALLED=0
 		else
-			printf "[required] ${GREEN}$i installed$NC\n"
+			printf "[ok] ${GREEN}$i installed$NC\n"
 		fi
 
 	done
