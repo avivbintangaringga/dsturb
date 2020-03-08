@@ -124,7 +124,7 @@ func_start_attack()
     done
 
     # Oh no!, no target is found
-    if [[ $SPOOF_TARGETS == "" ]]
+    if [[ -z $SPOOF_TARGETS ]]
     then
         # Ask if you want to retry
         read -n1 -p "[!] No target found! Retry? [Y/n]: " RETRY
