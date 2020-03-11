@@ -74,7 +74,8 @@ func_header()
     echo -e "     | ##  | ## \____  ##  | ## /##| ##  | ##| ##      | ##  | ##"
     echo -e "     |  ####### /#######/  |  ####/|  ######/| ##      | #######/"
     echo -e "      \_______/|_______/    \___/   \______/ |__/      |_______/ "
-    echo -e "                                                       version $VERSION"
+    echo -e ""
+    echo -e "      Author: R7FX, MrSyhd                             version $VERSION"
     echo -e ""
     echo -e ""
 }
