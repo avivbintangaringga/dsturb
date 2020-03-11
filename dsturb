@@ -246,7 +246,7 @@ func_scan_network()
     func_header
 	
 	# Print host length warning
-	[[ $CIDR -lt 22 ]] && echo -e "[!] We've detect that your network hosts is more than 1022, the time taken for scanning will be longer"
+	[[ $CIDR -lt 22 ]] && echo -e "[!] Large network detected, this scan may take minutes or hours"
 
     echo -e "[*] Scanning network $NETWORK..."
 
