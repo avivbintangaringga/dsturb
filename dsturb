@@ -244,6 +244,10 @@ func_rate_limit()
 func_scan_network()
 {
     func_header
+	
+	# Print host length warning
+	[[ $CIDR -lt 22 ]] && echo -e "[!] We've detect that your network hosts is more than 1022, the time taken for scanning will be longer"
+
     echo -e "[*] Scanning network $NETWORK..."
 
     # Scan all available IP Address in then network
@@ -391,9 +395,12 @@ start_interactive_mode()
 
     # Get gateway IP of interface
     GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
+	
+	# Store CIDR from the given gateway
+	CIDR=$(echo $NETWORK | cut -d "/" -f2)
 
     # Just turn to <gateway>/<cidr> format, not really important
-    NETWORK="$GATEWAY/$(echo $NETWORK | cut -d '/' -f2)"
+	NETWORK="$GATEWAY/$CIDR"
 
     # Scan the network
     func_scan_network
