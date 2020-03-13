@@ -532,6 +532,15 @@ then
     exit 1
 fi
 
+# Get Gateway IP Address
+GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
+
+NETWORK="$GATEWAY/$(echo $NETWORK | cut -d '/' -f2)"
+
+# Get all of your IP Addresses and add to exclusion list
+MY_IP=$(ip -o -4 a | awk '{print $4 }' | cut -d '/' -f1 | grep -v ^127 | tr '\n' ' ')
+EXCLUDED_IP=$(echo "$MY_IP $EXCLUDED_IP" | tr ',' ' ' | tr -s ' ')
+
 # If no argument is given, then run interactive mode
 [[ -z $1 ]] && start_interactive_mode
 
@@ -599,15 +608,6 @@ then
     func_randomize_mac
     NETWORK=$(ip -o -f inet addr show $INTERFACE 2>&1 | awk '/scope global/ {printf "%s\n",$4}')
 fi
-
-# Get Gateway IP Address
-GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
-
-NETWORK="$GATEWAY/$(echo $NETWORK | cut -d '/' -f2)"
-
-# Get all of your IP Addresses and add to exclusion list
-MY_IP=$(ip -o -4 a | awk '{print $4 }' | cut -d '/' -f1 | grep -v ^127 | tr '\n' ' ')
-EXCLUDED_IP=$(echo "$MY_IP $EXCLUDED_IP" | tr ',' ' ' | tr -s ' ')
 
 # Scan the network
 func_scan_network
