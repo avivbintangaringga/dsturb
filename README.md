@@ -37,5 +37,6 @@ Then go to the package directory and install
 make install
 ```
 ## Authors
+**Aviv Bintang Aringga**
 **Syahid Nurrohim**
 
