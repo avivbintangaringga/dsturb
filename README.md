@@ -46,7 +46,7 @@ Forward target internet access and keep current MAC Address
 ```
 dsturb -c wlp3s0
 ```
-Limit target bandwidthm
+Limit target bandwidth
 ```
 dsturb -cL 50K
 ```
