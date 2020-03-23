@@ -37,9 +37,18 @@ Helper contents
              (default: b)
     
              e.g: 10K, 500K, 1M, 10M
-Example:
+####Example:
+Forward target internet access and keep current MAC Address
 ```
-sudo dsturb -c -r -L 50K -e "10.10.4.2 10.10.4.32"
+sudo dsturb -c wlp3s0
+```
+Limit target bandwith with excluded address
+```
+sudo dsturb -cL 50K -e "network_id.host_id1 network_id.host_id2" wlp3s0
+```
+Drop target internet access and randomize current MAC Address
+```
+sudo dsturb -dr wlp3s0
 ```
 ### Authors
 [Aviv Bintang Aringga](https://github.com/avivbintangaringga)
