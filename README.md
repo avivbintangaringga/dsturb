@@ -16,27 +16,27 @@ make install
 Helper contents
     
 	Options:
-            -c  --connect                     Enable internet access on target"
-            -d  --disconnect                  Disable internet access on target"
-            -r  --randomize                   Randomize interface's MAC Address"
-            -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
-            -L  --limit     [rate-limit]      Limit bandwith for target"
-            -h  --help                        Display help"
+            -c  --connect                     Enable internet access on target
+            -d  --disconnect                  Disable internet access on target
+            -r  --randomize                   Randomize interface's MAC Address
+            -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses
+            -L  --limit     [rate-limit]      Limit bandwith for target
+            -h  --help                        Display help
     
-         Supported rate limit units:"
-             b   ->  bits per second"
-             k   ->  kilobits per second"
-             m   ->  megabits per second"
-             g   ->  gigabits per second"
-             t   ->  terabits per second"
-             B   ->  Bytes per second"
-             K   ->  Kilobytes per second"
-             M   ->  Megabytes per second"
-             G   ->  Gigabytes per second"
-             T   ->  Terabytes per second"
-             (default: b)"
+         Supported rate limit units:
+             b   ->  bits per second
+             k   ->  kilobits per second
+             m   ->  megabits per second
+             g   ->  gigabits per second
+             t   ->  terabits per second
+             B   ->  Bytes per second
+             K   ->  Kilobytes per second
+             M   ->  Megabytes per second
+             G   ->  Gigabytes per second
+             T   ->  Terabytes per second
+             (default: b)
     
-             e.g: 10K, 500K, 1M, 10M"
+             e.g: 10K, 500K, 1M, 10M
 Example:
 ```
 sudo dsturb -cr wlp3s0 -L 50K
