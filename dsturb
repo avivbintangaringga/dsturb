@@ -518,8 +518,8 @@ start_interactive_mode()
 # Arpspoof is requiring root access
 if [[ $EUID -ne 0 ]] 
 then 
-    echo -e "\n[!] You must run this script as root.\n"
-    exit 1
+    sudo "$0" "$@"
+    exit $?
 fi
 
 # Call function to check package requirements
