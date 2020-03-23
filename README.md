@@ -2,7 +2,17 @@
 Network Traffic Controller
 
 Supported OS (Linux, Darwin, Free-BSD)
-## Getting Started
+
+### Installation
+Clone this repo using git clone
+```
+git clone https://github.com/avivbintangaringga/dsturb.git
+```
+Then go to the package directory and install
+```
+make install
+```
+### Getting Started
 Helper contents
     
 	Options:
@@ -27,16 +37,11 @@ Helper contents
              (default: b)"
     
              e.g: 10K, 500K, 1M, 10M"
-### Installing
-Clone this repo using git clone
+Example:
 ```
-git clone https://github.com/avivbintangaringga/dsturb.git
+dsturb 
 ```
-Then go to the package directory and install
-```
-make install
-```
-## Authors
+### Authors
 [Aviv Bintang Aringga](https://github.com/avivbintangaringga)
 
 [Syahid Nurrohim](https://github.com/syahidnurrohim)
