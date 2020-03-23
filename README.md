@@ -37,7 +37,7 @@ Then go to the package directory and install
 make install
 ```
 ## Authors
-**Aviv Bintang Aringga**
+[Aviv Bintang Aringga](https://github.com/avivbintangaringga)
 
-**Syahid Nurrohim**
+[Syahid Nurrohim](https://github.com/syahidnurrohim)
 
