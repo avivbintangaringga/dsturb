@@ -39,7 +39,7 @@ Helper contents
              e.g: 10K, 500K, 1M, 10M"
 Example:
 ```
-dsturb 
+sudo dsturb -cr wlp3s0 -L 50K
 ```
 ### Authors
 [Aviv Bintang Aringga](https://github.com/avivbintangaringga)
