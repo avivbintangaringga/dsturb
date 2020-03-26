@@ -465,7 +465,7 @@ func_start_attack()
     # Loop and discover new targets
     while true
     do
-        NEW_SCAN=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-)
+        NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-)
 
         while read -r RESULT
         do
@@ -481,6 +481,7 @@ func_start_attack()
                 TARGET_IP="$TARGET_IP $IP"
             fi
         done < <(echo "$NEW_SCAN")
+        sleep 60  # Nmap scan can interrupt with arpspoof, so don't do it too often
     done
 }
 
