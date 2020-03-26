@@ -22,12 +22,149 @@ VERSION=3.5
 #
 
 # Required packages for script to run
-REQUIREMENTS="arpspoof macchanger tc dhclient ifconfig"
+REQUIREMENTS="arpspoof macchanger tc dhclient ifconfig nmap curl"
 
-# Terminal colors
-RED="\033[0;31m"
-GREEN="\033[0;32m"
-NC="\033[0m"
+# Terminal colors ( stolen from fluxion ;) )
+
+# Regular Text
+readonly CRed="\e[0;31m"
+readonly CGrn="\e[0;32m"
+readonly CYel="\e[0;33m"
+readonly CBlu="\e[0;34m"
+readonly CPrp="\e[0;35m"
+readonly CCyn="\e[0;36m"
+readonly CGry="\e[0;37m"
+readonly CWht="\e[0;37m"
+readonly CClr="\e[0m"
+
+# [S] - Strong text (bold)
+readonly CSRed="\e[1;31m"
+readonly CSGrn="\e[1;32m"
+readonly CSYel="\e[1;33m"
+readonly CSBlu="\e[1;34m"
+readonly CSPrp="\e[1;35m"
+readonly CSCyn="\e[1;36m"
+readonly CSGry="\e[1;37m"
+readonly CSWht="\e[1;37m"
+
+# [D] - Dark text
+readonly CDRed="\e[2;31m"
+readonly CDGrn="\e[2;32m"
+readonly CDYel="\e[2;33m"
+readonly CDBlu="\e[2;34m"
+readonly CDPrp="\e[2;35m"
+readonly CDCyn="\e[2;36m"
+readonly CDGry="\e[2;37m"
+readonly CDWht="\e[2;37m"
+
+# [I] Italicized text
+readonly CIRed="\e[3;31m"
+readonly CIGrn="\e[3;32m"
+readonly CIYel="\e[3;33m"
+readonly CIBlu="\e[3;34m"
+readonly CIPrp="\e[3;35m"
+readonly CICyn="\e[3;36m"
+readonly CIGry="\e[3;37m"
+readonly CIWht="\e[3;37m"
+
+# [U] - Underlined text
+readonly CURed="\e[4;31m"
+readonly CUGrn="\e[4;32m"
+readonly CUYel="\e[4;33m"
+readonly CUBlu="\e[4;34m"
+readonly CUPrp="\e[4;35m"
+readonly CUCyn="\e[4;36m"
+readonly CUGry="\e[4;37m"
+readonly CUWht="\e[4;37m"
+
+# [B] - Blinking text
+readonly CBRed="\e[5;31m"
+readonly CBGrn="\e[5;32m"
+readonly CBYel="\e[5;33m"
+readonly CBBlu="\e[5;34m"
+readonly CBPrp="\e[5;35m"
+readonly CBCyn="\e[5;36m"
+readonly CBGry="\e[5;37m"
+readonly CBWht="\e[5;37m"
+
+printc()
+{
+    local COLS="$(tput cols)"
+    local TEXT=$(echo $1 | wc -c)
+    local SPACES=$((COLS/2-TEXT/2))
+    local I=0
+    while [[ $I -lt $SPACES ]]; do echo -n " "; let I++; done
+    echo -e "$1"
+}
+
+printtitle()
+{
+    local COLS="$(tput cols)"
+    local FIXED=$(echo "$1" | wc -c)  
+    PREFIX=$((COLS/2-FIXED/2-4))
+    local I=0
+    while [[ $I -lt $PREFIX ]]; do echo -n "-"; let I++; done
+    [[ ! -z $1 ]] && echo -ne "|   $1   |" || echo -n "--------"
+    I=0
+    REMAINDER=$((COLS-PREFIX-FIXED-8))
+    while [[ $I -lt $REMAINDER ]]; do echo -n "-"; let I++; done
+    echo
+}
+
+printcf()
+{
+    local COLS="$(tput cols)"
+    local FIXED=100
+    PREFIX=$((COLS/2-FIXED/2))
+    local I=0
+    while [[ $I -lt $PREFIX ]]; do echo -n " "; let I++; done
+    printf "%-${FIXED}b\n" "$1"
+
+}
+
+# Check for updates
+func_check_updates()
+{
+    echo -ne "[*] Checking for updates..."
+
+    if ! wget -q --spider https://raw.githubusercontent.com
+    then
+        echo -e "cannot check updates!"
+        return
+    fi
+
+    LATEST_VERSION=$(curl -sS https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version)
+
+    if [[ $VERSION != $LATEST_VERSION ]]
+    then
+        echo -e "update detected! (Version: $LATEST_VERSION)"
+        read -p "Do you want to update now? [Y/n]: " UPDATE_PROMPT
+
+        case $UPDATE_PROMPT in
+            n|N) return ;;
+            *) ;;
+        esac
+
+        [[ -d /tmp/dsturb_updates ]] && rm -r /tmp/dsturb_updates
+
+        echo -e "[*] Downloading updates..."
+        git clone https://github.com/avivbintangaringga/dsturb /tmp/dsturb_updates -q
+
+        echo -e "[*] Installing updates..."
+        make install -sC /tmp/dsturb_updates
+
+        echo -e "[*] Updates done!"
+        echo -e ""
+        read -p "Do you want to relaunch now? [Y/n]: " RELAUNCH_PROMPT
+
+        case $UPDATE_PROMPT in
+            n|N) exit ;;
+            *) dsturb && exit ;;
+        esac
+    else
+        echo -e "no updates detected!"
+    fi
+}
 
 # Display help
 func_help()
@@ -64,20 +201,21 @@ func_help()
 func_header()
 {
     clear
-    echo -e ""
-    echo -e ""
-    echo -e "            /##             /##                         /##      "
-    echo -e "           | ##            | ##                        | ##      "
-    echo -e "       /#######  /######$ /######   /##   /##  /###### | ######$ "
-    echo -e "      /##__  ## /##_____/|_  ##_/  | ##  | ## /##__  ##| ##__  ##"
-    echo -e "     | ##  | ##|  ######   | ##    | ##  | ##| ##  \__/| ##  \ ##"
-    echo -e "     | ##  | ## \____  ##  | ## /##| ##  | ##| ##      | ##  | ##"
-    echo -e "     |  ####### /#######/  |  ####/|  ######/| ##      | #######/"
-    echo -e "      \_______/|_______/    \___/   \______/ |__/      |_______/ "
-    echo -e ""
-    echo -e "      Author: R7FX, MrSyhd                             version $VERSION"
-    echo -e ""
-    echo -e ""
+    printtitle ""
+    printtitle ""
+    printtitle "       /##             /##                         /##      "
+    printtitle "      | ##            | ##                        | ##      "
+    printtitle "  /#######  /######$ /######   /##   /##  /###### | ######$ "
+    printtitle " /##__  ## /##_____/|_  ##_/  | ##  | ## /##__  ##| ##__  ##"
+    printtitle "| ##  | ##|  ######   | ##    | ##  | ##| ##  \__/| ##  \ ##"
+    printtitle "| ##  | ## \____  ##  | ## /##| ##  | ##| ##      | ##  | ##"
+    printtitle "|  ####### /#######/  |  ####/|  ######/| ##      | #######/"
+    printtitle " \_______/|_______/    \___/   \______/ |__/      |_______/ "
+    printtitle ""
+    printtitle "Author: R7FX, MrSyhd                             version $VERSION"
+    printtitle ""
+    printtitle ""
+    echo
 }
 
 # Validate IP Address
@@ -333,7 +471,7 @@ start_interactive_mode()
 
     # Print header
     func_header
-    echo -e "\nSelect Network Interface:\n"
+    echo -e "Select Network Interface:\n"
 
     # Iterate all interface that connected to a network
     local INDEX=1
@@ -531,6 +669,8 @@ then
     echo -e "\n[!] Please check your network connection!\n"
     exit 1
 fi
+
+func_check_updates
 
 # Get Gateway IP Address
 GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
