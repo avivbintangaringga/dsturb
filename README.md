@@ -1,7 +1,7 @@
 ![Release](https://img.shields.io/badge/release-beta-yellow.svg)
 ![Language](https://img.shields.io/badge/made%20with-bash-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![LastUpdate](https://img.shields.io/badge/last%20update-2019%2F05-orange.svg)
+![LastUpdate](https://img.shields.io/badge/last%20update-2020%2F03-orange.svg)
 ![TestedOn](https://img.shields.io/badge/tested%20on-Kali%20Linux-red.svg)
 
 # Dsturb
