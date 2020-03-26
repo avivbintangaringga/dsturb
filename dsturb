@@ -133,7 +133,7 @@ func_check_updates()
         return
     fi
 
-    LATEST_VERSION=$(curl -sS "https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version?rand=$(shuf -n1 -i 1-99999)") # Avoid caching
+    LATEST_VERSION=$(curl -sS https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version?)
 
     if [[ $VERSION != $LATEST_VERSION ]]
     then
