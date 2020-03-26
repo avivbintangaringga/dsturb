@@ -37,18 +37,35 @@ Helper contents
              (default: b)
     
              e.g: 10K, 500K, 1M, 10M
-### Example:
+### Examples
+You can run to interactive mode with just following comand
+```
+dsturb
+```
 Forward target internet access and keep current MAC Address
 ```
-sudo dsturb -c wlp3s0
+dsturb -c wlp3s0
 ```
-Limit target bandwith with excluded address
+Limit target bandwidth
 ```
-sudo dsturb -cL 50K -e "network_id.host_id1 network_id.host_id2" wlp3s0
+dsturb -cL 50K
 ```
-Drop target internet access and randomize current MAC Address
+Limit target bandwidth with one excluded IP Address 
+n.b: Your IP Address is always be excluded, so you don't have to exclude it explicitly
 ```
-sudo dsturb -dr wlp3s0
+dsturb -cL 1M -e 192.168.1.20
+```
+Limit target bandwidth with many excluded IP Addresses
+```
+dsturb -cL 50K -e 192.168.1.20,192.168.1.30,192.168.1.40
+```
+Drop internet access and randomize interface's MAC Address before starting
+```
+dsturb -dr wlp3s0
+```
+Drop and exclude IP Addresses
+```
+dsturb -dre 192.168.1.20,192.168.1.30 wlp3s0
 ```
 ### Authors
 [Aviv Bintang Aringga](https://github.com/avivbintangaringga)
