@@ -151,9 +151,9 @@ func_check_updates()
         echo -e ""
         read -p "Do you want to relaunch now? [Y/n]: " RELAUNCH_PROMPT
 
-        case $UPDATE_PROMPT in
+        case $RELAUNCH_PROMPT in
             n|N) exit ;;
-            *) dsturb && exit ;;
+            *) echo -e "\nRelaunching...\n" && dsturb && exit ;;
         esac
     else
         echo -e "no updates detected!"
