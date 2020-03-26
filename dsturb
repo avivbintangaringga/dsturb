@@ -138,12 +138,6 @@ func_check_updates()
     if [[ $VERSION != $LATEST_VERSION ]]
     then
         echo -e "update detected! (Version: $LATEST_VERSION)"
-        read -p "Do you want to update now? [Y/n]: " UPDATE_PROMPT
-
-        case $UPDATE_PROMPT in
-            n|N) return ;;
-            *) ;;
-        esac
 
         [[ -d /tmp/dsturb_updates ]] && rm -r /tmp/dsturb_updates
 
