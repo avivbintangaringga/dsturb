@@ -1,3 +1,9 @@
+![Release](https://img.shields.io/badge/release-beta-yellow.svg)
+![Language](https://img.shields.io/badge/made%20with-bash-brightgreen.svg)
+![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
+![LastUpdate](https://img.shields.io/badge/last%20update-2019%2F05-orange.svg)
+![TestedOn](https://img.shields.io/badge/tested%20on-Kali%20Linux,%20Linux%20Mint-red.svg)
+
 # Dsturb
 Network Traffic Controller
 
@@ -69,6 +75,5 @@ dsturb -dre 192.168.1.20,192.168.1.30 wlp3s0
 ```
 ### Authors
 [Aviv Bintang Aringga](https://github.com/avivbintangaringga)
-
 [Syahid Nurrohim](https://github.com/syahidnurrohim)
 
