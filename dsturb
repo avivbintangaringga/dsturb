@@ -153,7 +153,7 @@ func_check_updates()
 
         case $RELAUNCH_PROMPT in
             n|N) exit ;;
-            *) echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Relaunching...${CClr}\n\n" && dsturb && exit ;;
+            *) echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Relaunching...${CClr}\n\n" && dsturb $@ && exit ;;
         esac
     else
         echo -e "${CYel}no updates detected!${CClr}"
