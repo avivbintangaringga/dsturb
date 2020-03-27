@@ -279,7 +279,7 @@ func_check_prerequires()
         if ! hash $COMMAND 2>/dev/null
         then
             # Display error message
-            echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! $([[ $COMMAND != $PACKAGE ]] && echo \"(Package: $PACKAGE)\")${CClr}"
+            echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! $([[ $COMMAND != $PACKAGE ]] && echo '(Package: $PACKAGE)')${CClr}"
             # Add package not installed flag
             PACKAGES_NOT_INSTALLED="$PACKAGES_NOT_INSTALLED $PACKAGES"
             NOT_INSTALLED=true
@@ -532,7 +532,7 @@ start_interactive_mode()
         echo -ne "${CGrn}[${CBRed}!${CGrn}]${CYel} No interface is currently connected to any network! Scan again? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
         read -n1 SCAN_AGAIN
 
-        case $SCAN_AGAIN in
+        case $SCAN_AGAIN in${CYel}[${CGrn}*${CYel}] 
             N|n) func_cleanup ;;
             *) func_select_interface ;;
         esac
@@ -556,7 +556,7 @@ start_interactive_mode()
     # Selected network
     NETWORK=$(echo $SELECTED_IFACE | cut -d '(' -f2 | cut -d ')' -f1)
 
-    # Prompt MAC Address randomization
+    # Prompt MAC Address randomization${CYel}[${CGrn}*${CYel}] 
     func_header
     echo -ne "${CGrn}[${CYel}?${CGrn}]${CYel} Do you want to randomize ${CGrn}$INTERFACE${CYel} MAC Address? [${CGrn}y${CYel}/${CBRed}N${CYel}]: ${CYel}"
     read -n1 RANDOMIZE_MAC_PROMPT
