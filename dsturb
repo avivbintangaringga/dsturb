@@ -19,7 +19,7 @@
 #
 
 # Required packages for script to run
-REQUIREMENTS="arpspoof macchanger tc dhclient ifconfig nmap curl wget"
+REQUIREMENTS="arpspoof:dsniff macchanger tc:iproute dhclient:isc-dhcp-client ifconfig:net-tools nmap wget"
 
 # Script version
 VERSION=$(cat /usr/share/dsturb/version)
@@ -132,7 +132,7 @@ func_check_updates()
         return
     fi
 
-    LATEST_VERSION=$(curl -sS https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version)
+    LATEST_VERSION=$(wget -qO - https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version)
 
     if [[ $VERSION != $LATEST_VERSION ]]
     then
@@ -267,24 +267,31 @@ func_check_rate_limit()
 func_check_prerequires()
 {
     # Assume all packages is installed
-    PACKAGE_NOT_INSTALLED=false
+    NOT_INSTALLED=false
 
     # Loop through each required packages
-	for PACKAGE in $REQUIREMENTS
+	for REQ in $REQUIREMENTS
 	do
         # Check if requirements is installed with 'hash' command 
         # Exit code should be 0 if it is installed and 1 if it isn't
-        if ! hash $PACKAGE 2>/dev/null
+        COMMAND=$(echo $REQ | cut -d ':' -f1)
+        PACKAGE=$(echo $REQ | cut -d ':' -f2)
+        if ! hash $COMMAND 2>/dev/null
         then
             # Display error message
-            echo -e "${CYel}[${CBRed}!${CYel}] ${CRed}$PACKAGE${CYel} is not installed!${CClr}\n"
+            echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! $([[ $COMMAND != $PACKAGE ]] && echo \"(Package: $PACKAGE)\")${CClr}"
             # Add package not installed flag
-            PACKAGE_NOT_INSTALLED=true
+            PACKAGES_NOT_INSTALLED="$PACKAGES_NOT_INSTALLED $PACKAGES"
+            NOT_INSTALLED=true
         fi
     done
 
     # Exit if any of the requirements isn't installed
-    [[ $PACKAGE_NOT_INSTALLED == true ]] && exit 1
+    if [[ $NOT_INSTALLED == true ]]
+    then
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} You might run 'apt-get install$PACKAGES_NOT_INSTALLED' or similiar depending on your distro.\n"
+        exit 1
+    fi
 }
 
 # Do some cleanup
@@ -464,7 +471,7 @@ func_start_attack()
         arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
     done
 
-    echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CGrn} Attack is running!${CClr}"
+    echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CGrn} Attack is running! ${CYel}Press CTRL+C to stop${CClr}"
 
     RESCANNING_DELAY=60
 
@@ -780,6 +787,8 @@ NETWORK=$(ip -o -f inet addr show $INTERFACE 2>&1 | awk '/scope global/ {printf 
 GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
 
 CIDR=$(echo $NETWORK | cut -d "/" -f2)
+
+NETWORK="$GATEWAY/$CIDR"
 
 # Open new terminal screen
 tput smcup
