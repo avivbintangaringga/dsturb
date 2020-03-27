@@ -280,9 +280,9 @@ func_check_prerequires()
         then
             # Display error message
             echo -ne "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! "
-            [[ "$COMMAND" != "$PACKAGE" ]] && echo "(Package: $PACKAGE)" || echo
+            [[ "$COMMAND" != "$PACKAGE" ]] && echo -e "\t(Package: $PACKAGE)${CClr}" || echo -e "${CClr}"
             # Add package not installed flag
-            PACKAGES_NOT_INSTALLED="$PACKAGES_NOT_INSTALLED $PACKAGES"
+            PACKAGES_NOT_INSTALLED="$PACKAGES_NOT_INSTALLED $PACKAGE"
             NOT_INSTALLED=true
         fi
     done
@@ -290,7 +290,7 @@ func_check_prerequires()
     # Exit if any of the requirements isn't installed
     if [[ $NOT_INSTALLED == true ]]
     then
-        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} You might run 'apt-get install$PACKAGES_NOT_INSTALLED' or similiar depending on your distro.\n"
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} You might run 'apt-get install$PACKAGES_NOT_INSTALLED' or similiar depending on your distro.${CClr}\n"
         exit 1
     fi
 }
