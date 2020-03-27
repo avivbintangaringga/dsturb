@@ -533,7 +533,7 @@ start_interactive_mode()
         echo -ne "${CGrn}[${CBRed}!${CGrn}]${CYel} No interface is currently connected to any network! Scan again? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
         read -n1 SCAN_AGAIN
 
-        case $SCAN_AGAIN in${CYel}[${CGrn}*${CYel}] 
+        case $SCAN_AGAIN in
             N|n) func_cleanup ;;
             *) func_select_interface ;;
         esac
