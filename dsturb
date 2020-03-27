@@ -279,7 +279,8 @@ func_check_prerequires()
         if ! hash $COMMAND 2>/dev/null
         then
             # Display error message
-            echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! $([[ $COMMAND != $PACKAGE ]] && echo '(Package: $PACKAGE)')${CClr}"
+            echo -ne "${CGrn}[${CBRed}!${CGrn}]${CYel} ${CRed}$PACKAGE${CYel} is not installed! "
+            [[ "$COMMAND" != "$PACKAGE" ]] && echo "(Package: $PACKAGE)" || echo
             # Add package not installed flag
             PACKAGES_NOT_INSTALLED="$PACKAGES_NOT_INSTALLED $PACKAGES"
             NOT_INSTALLED=true
