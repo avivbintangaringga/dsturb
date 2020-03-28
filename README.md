@@ -5,7 +5,7 @@
 ![TestedOn](https://img.shields.io/badge/tested%20on-Kali%20Linux-red.svg)
 
 # Dsturb
-Network Traffic Controller
+Local Network Disturber
 
 Tested On: Kali Linux, Debian 10, DeepinOS, Mint
 
