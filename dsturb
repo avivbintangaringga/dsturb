@@ -676,19 +676,38 @@ start_interactive_mode()
 
             if [[ $EXCLUDE_PROMPT == 1 ]]
             then
-                func_header
-
-                echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select IP Addresses you want to exclude:\n"
-
-                local INDEX2=1
-                while [[ $INDEX2 -le ${#HOSTS[@]} ]]
+                while true
                 do
-                    printf " ${CGrn}%3s${CYel})  %s\n" $INDEX2 "${HOSTS[$INDEX2]}"
-                    let 'INDEX2++'
-                done
+                    func_header
 
-                echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
-                read SELECT_EXCLUDE_IP
+                    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select IP Addresses you want to exclude:\n"
+
+                    local INDEX2=1
+                    while [[ $INDEX2 -le ${#HOSTS[@]} ]]
+                    do
+                        printf " ${CGrn}%3s${CYel})  %s\n" $INDEX2 "${HOSTS[$INDEX2]}"
+                        let 'INDEX2++'
+                    done
+
+                    echo -e "\n ${CGrn}r|R${CYel})  Rescan${CClr}\n"
+
+                    echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+                    read SELECT_EXCLUDE_IP
+
+                    [[ $SELECT_EXCLUDE_IP != "r" && $SELECT_EXCLUDE_IP != "R" ]] && break
+
+                    func_scan_network
+
+                    INDEX=1
+                    while [[ $INDEX -le ${#HOSTS[@]} ]]
+                    do
+                        # Assign the IP to an array
+                        IP_LIST[$INDEX]=$(echo "${HOSTS[$INDEX]}" | cut -d ' ' -f1)
+                        let 'INDEX++'
+                    done
+
+                    TARGET_IP="${IP_LIST[@]}"
+                done
 
                 # Remove excluded IP from target list
                 for SELECTED in $(echo $SELECT_EXCLUDE_IP | tr ',' ' ')
