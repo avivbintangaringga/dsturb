@@ -688,7 +688,7 @@ start_interactive_mode()
                 for SELECTED in $(echo $SELECT_EXCLUDE_IP | tr ',' ' ')
                 do
                     [[ $SELECTED -lt $INDEX2 ]] && TARGET_IP=$(echo $TARGET_IP | sed "s/\<${IP_LIST[$SELECTED]}\>//g")
-                    EXCLUDED_IP="$EXCLUDED_UP ${IP_LIST[$SELECTED]}"
+                    EXCLUDED_IP="$EXCLUDED_IP ${IP_LIST[$SELECTED]}"
                 done
     
                 EXCLUDED_IP=$(echo $EXCLUDED_IP | tr -s ' ')
