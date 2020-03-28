@@ -603,7 +603,7 @@ start_interactive_mode()
     do
         func_header
 
-        echo -e "${CGrn}[${CYel}?${CGrn}]${CYel} Select host scanner:\n"
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select host scanner:\n"
         echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fastest${CYel}) ${CGrn}(${CYel}default${CGrn})"
 		echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
