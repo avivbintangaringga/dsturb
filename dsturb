@@ -126,13 +126,13 @@ func_check_updates()
 {
     echo -ne "${CGrn}[${CYel}*${CGrn}]${CYel} Checking for updates... ${CClr}"
 
-    if ! wget -q --spider https://raw.githubusercontent.com
+    if ! wget -q --spider --no-check-certificate https://raw.githubusercontent.com
     then
         echo -e "${CRed}cannot check updates!${CClr}"
         return
     fi
 
-    LATEST_VERSION=$(wget -qO - https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version)
+    LATEST_VERSION=$(wget --no-check-certificate -qO - https://raw.githubusercontent.com/avivbintangaringga/dsturb/master/version)
 
     if [[ $VERSION != $LATEST_VERSION ]]
     then
