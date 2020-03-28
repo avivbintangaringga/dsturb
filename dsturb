@@ -19,7 +19,7 @@
 #
 
 # Required packages for script to run
-REQUIREMENTS="arpspoof:dsniff macchanger tc:iproute dhclient:isc-dhcp-client ifconfig:net-tools nmap wget arp:net-tools arp-scan netdiscover"
+REQUIREMENTS="arpspoof:dsniff macchanger tc:iproute dhclient:isc-dhcp-client ifconfig:net-tools nmap wget arp-scan netdiscover"
 
 # Script version
 VERSION=$(cat /usr/share/dsturb/version)
@@ -170,7 +170,7 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-    echo -e "         -s  --scanner                     Host scanner: nmap,arp-scan,netdiscover,arp"
+    echo -e "         -s  --scanner                     Host scanner: nmap,arp-scan,netdiscover"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
     echo -e "         -h  --help                        Display help"
@@ -410,7 +410,6 @@ func_scan_network()
         nmap)           SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-);;
         arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-        arp)            SCAN_RESULT=$(arp -ni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
     esac
 
     # Exclude gateway IP and your own IP from the list
@@ -503,7 +502,6 @@ func_start_attack()
             nmap)           NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-);;
             arp-scan)       NEW_SCAN=$(arp-scan -g -N -r 1 -l -I $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
             netdiscover)    NEW_SCAN=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-            arp)            NEW_SCAN=$(arp -ni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         esac
 
         while read -r RESULT
@@ -629,7 +627,6 @@ start_interactive_mode()
         echo -e "    ${CGrn}1${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel}) (${CGrn}default${CYel})"
         echo -e "    ${CGrn}2${CYel}) Arp-scan      (${CGrn}faster${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
-        echo -e "    ${CGrn}4${CYel}) Arp table     (${CGrn}fastest${CYel}) (${CRed}not reliable${CYel})"
         echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
         read -n1 HOST_SCANNER_PROMPT
 
@@ -637,7 +634,6 @@ start_interactive_mode()
             1) HOST_SCANNER=nmap; break ;;
             2) HOST_SCANNER=arp-scan; break ;;
             3) HOST_SCANNER=netdiscover; break ;;
-            4) HOST_SCANNER=arp; break ;;
             *) [[ -z $HOST_SCANNER_PROMPT ]] && HOST_SCANNER=nmap && break; echo -e "\n\n${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid input!${CClr}"; sleep 2 ;;
         esac
     done
@@ -839,7 +835,7 @@ then
     exit 1
 fi
 
-[[ $HOST_SCANNER != nmap && $HOST_SCANNER != arp-scan && $HOST_SCANNER != netdiscover && $HOST_SCANNER != arp ]] && func_help && exit 1
+[[ $HOST_SCANNER != nmap && $HOST_SCANNER != arp-scan && $HOST_SCANNER != netdiscover ]] && func_help && exit 1
 
 # Loop through all IP Addresses to validate IP Address format
 [[ ! -z $EXCLUDED_IP ]] && EXCLUDED_IP=$(echo "$EXCLUDED_IP" | tr ',' ' ') && for IP in "$EXCLUDED_IP"
