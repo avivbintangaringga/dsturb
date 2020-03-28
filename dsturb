@@ -126,7 +126,7 @@ func_check_updates()
 {
     echo -ne "${CGrn}[${CYel}*${CGrn}]${CYel} Checking for updates... ${CClr}"
 
-    if ! wget -q --no-check-certificate --spider https://raw.githubusercontent.com
+    if ! wget -q --spider https://raw.githubusercontent.com
     then
         echo -e "${CRed}cannot check updates!${CClr}"
         return
