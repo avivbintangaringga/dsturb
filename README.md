@@ -7,7 +7,7 @@
 # Dsturb
 Network Traffic Controller
 
-Supported OS (Linux, Darwin, Free-BSD)
+Tested On: Kali Linux, Debian 10, DeepinOS, Mint
 
 ### Installation
 Clone this repo using git clone
@@ -25,7 +25,7 @@ Helper contents
             -c  --connect                     Enable internet access on target
             -d  --disconnect                  Disable internet access on target
             -r  --randomize                   Randomize interface's MAC Address
-			-s  --scan      [scanner]         Host Scanner arp-scan(default),nmap,netdiscover
+            -s  --scan      [scanner]         Host Scanner arp-scan(default),nmap,netdiscover
             -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses
             -L  --limit     [rate-limit]      Limit bandwith for target
             -h  --help                        Display help

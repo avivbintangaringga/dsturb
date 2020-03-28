@@ -87,16 +87,6 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
-#printc()
-#{
-#    local COLS="$(tput cols)"
-#    local TEXT=$(echo $1 | wc -c)
-#    local SPACES=$((COLS/2-TEXT/2))
-#    local I=0
-#    while [[ $I -lt $SPACES ]]; do echo -n " "; let I++; done
-#    echo -e "$1"
-#}
-
 printtitle()
 {
     local COLS="$(tput cols)"
@@ -110,16 +100,6 @@ printtitle()
     while [[ $I -lt $REMAINDER ]]; do echo -ne "${CGrn}-${CClr}"; let I++; done
     echo
 }
-
-#printcf()
-#{
-#    local COLS="$(tput cols)"
-#    local FIXED=100
-#    PREFIX=$((COLS/2-FIXED/2))
-#    local I=0
-#    while [[ $I -lt $PREFIX ]]; do echo -n " "; let I++; done
-#    printf "%-${FIXED}b\n" "$1"
-#}
 
 # Check for updates
 func_check_updates()
@@ -170,7 +150,7 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-	echo -e "         -s  --scanner                     Host scanner: arp-scan(default),nmap,netdiscover"
+	echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
     echo -e "         -h  --help                        Display help"
@@ -644,11 +624,6 @@ start_interactive_mode()
     # Print header
     func_header
 
-    #echo -e " ${CYel}+${CClr}"
-    #echo -e " ${CGrn}|${CYel} Gateway     ${CGrn}: ${CYel}$GATEWAY${CClr}"
-    #echo -e " ${CGrn}|${CYel} Excluded IP ${CGrn}: ${CYel}$EXCLUDED_IP${CClr}"
-    #echo -e " ${CYel}+${CClr}"
-    #echo -e ""
     echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Target:\n"
 
     # Iterate all hosts found
@@ -697,11 +672,6 @@ start_interactive_mode()
             then
                 func_header
 
-                #echo -e " ${CYel}+${CClr}"
-                #echo -e " ${CGrn}|${CYel} Gateway     ${CGrn}: ${CYel}$GATEWAY${CClr}"
-                #echo -e " ${CGrn}|${CYel} Excluded IP ${CGrn}: ${CYel}$EXCLUDED_IP${CClr}"
-                #echo -e " ${CYel}+${CClr}"
-                #echo -e ""
                 echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select IP Addresses you want to exclude:\n"
 
                 local INDEX2=1
