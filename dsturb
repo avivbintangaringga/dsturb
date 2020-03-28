@@ -388,7 +388,7 @@ func_scan_network()
     # Scan all available IP Address in then network
     case $HOST_SCANNER in
         nmap)           SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-);;
-        arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+        arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
     esac
 
@@ -480,7 +480,7 @@ func_start_attack()
 
         case $HOST_SCANNER in
             nmap)           NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-);;
-            arp-scan)       NEW_SCAN=$(arp-scan -g -N -r 1 -l -I $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+            arp-scan)       NEW_SCAN=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
             netdiscover)    NEW_SCAN=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         esac
 
