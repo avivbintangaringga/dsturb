@@ -170,7 +170,7 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-    echo -e "         -s  --scanner                     Host scanner: nmap,arp-scan,netdiscover"
+    echo -e "         -s  --scanner                     Host scanner: arp-scan,nmap,netdiscover"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
     echo -e "         -h  --help                        Display help"
@@ -624,17 +624,17 @@ start_interactive_mode()
         func_header
 
         echo -e "${CGrn}[${CYel}?${CGrn}]${CYel} Select host scanner:\n"
-        echo -e "    ${CGrn}1${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel}) (${CGrn}default${CYel})"
-        echo -e "    ${CGrn}2${CYel}) Arp-scan      (${CGrn}faster${CYel})"
+        echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fastest${CGrn}) (${CYel}default${CGrn})"
+		echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
         echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
         read -n1 HOST_SCANNER_PROMPT
 
         case $HOST_SCANNER_PROMPT in
-            1) HOST_SCANNER=nmap; break ;;
-            2) HOST_SCANNER=arp-scan; break ;;
+            1) HOST_SCANNER=arp-scan; break ;;
+            2) HOST_SCANNER=nmap; break ;;
             3) HOST_SCANNER=netdiscover; break ;;
-            *) [[ -z $HOST_SCANNER_PROMPT ]] && HOST_SCANNER=nmap && break; echo -e "\n\n${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid input!${CClr}"; sleep 2 ;;
+            *) [[ -z $HOST_SCANNER_PROMPT ]] && HOST_SCANNER=arp-scan && break; echo -e "\n\n${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid input!${CClr}"; sleep 2 ;;
         esac
     done
 
@@ -822,7 +822,7 @@ done
 # Default values
 [[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
 [[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
-[[ -z $HOST_SCANNER ]] && HOST_SCANNER=nmap
+[[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
 
 # Check for interface availability
 [[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't exist!${CClr}\n" && exit 1
