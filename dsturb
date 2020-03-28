@@ -170,7 +170,7 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-    echo -e "         -s  --scanner                     Host scanner: arp-scan,nmap,netdiscover"
+	echo -e "         -s  --scanner                     Host scanner: arp-scan(default),nmap,netdiscover"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
     echo -e "         -h  --help                        Display help"

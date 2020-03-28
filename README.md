@@ -25,6 +25,7 @@ Helper contents
             -c  --connect                     Enable internet access on target
             -d  --disconnect                  Disable internet access on target
             -r  --randomize                   Randomize interface's MAC Address
+			-s  --scan      [scanner]         Host Scanner arp-scan(default),nmap,netdiscover
             -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses
             -L  --limit     [rate-limit]      Limit bandwith for target
             -h  --help                        Display help
@@ -54,16 +55,16 @@ dsturb -c wlp3s0
 ```
 Limit target bandwidth
 ```
-dsturb -cL 50K
+dsturb -cL 50K wlp3s0
 ```
 Limit target bandwidth with one excluded IP Address 
 n.b: Your IP Address is always be excluded, so you don't have to exclude it explicitly
 ```
-dsturb -cL 1M -e 192.168.1.20
+dsturb -cL 1M -e 192.168.1.20 wlp3s0
 ```
 Limit target bandwidth with many excluded IP Addresses
 ```
-dsturb -cL 50K -e 192.168.1.20,192.168.1.30,192.168.1.40
+dsturb -cL 50K -e 192.168.1.20,192.168.1.30,192.168.1.40 wlp3s0
 ```
 Drop internet access and randomize interface's MAC Address before starting
 ```
