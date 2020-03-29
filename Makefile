@@ -4,6 +4,8 @@ all:
 
 install:
 	install -Dm755 dsturb /usr/bin/dsturb
+	install -Dm644 version /usr/share/dsturb/version
 
 uninstall:
 	rm -f /usr/bin/dsturb
+	rm -rf /usr/share/dsturb
