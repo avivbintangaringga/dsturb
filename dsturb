@@ -818,8 +818,8 @@ start_interactive_mode()
 }
 
 # Arpspoof is requiring root access
-if [[ $EUID -ne 0 ]] 
-then 
+if [[ $EUID -ne 0 ]]
+then
     sudo "$0" "$@"
     exit $?
 fi
