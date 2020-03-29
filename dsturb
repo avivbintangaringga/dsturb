@@ -87,6 +87,14 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
+COMPATIBLE_DISTROS=(
+	"Kali"
+	"Mint"
+	"Debian"
+	"Deepin"
+	"Ubuntu"
+)
+
 printtitle()
 {
     local COLS="$(tput cols)"
@@ -99,6 +107,31 @@ printtitle()
     REMAINDER=$((COLS-PREFIX-FIXED-8))
     while [[ $I -lt $REMAINDER ]]; do echo -ne "${CGrn}-${CClr}"; let I++; done
     echo
+}
+
+func_detect_system()
+{
+	DISTRO="Unknown"
+	CHECK_DISTRO=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed 's/"//g' )
+
+	[[ ! -z $CHECK_DISTRO ]] && DISTRO=$CHECK_DISTRO
+
+	echo -e "\n${CSYel}Detecting your system..."
+	echo -e "${CYel}$DISTRO${CClr}\n"
+}
+
+func_display_info()
+{
+
+	func_header
+	BASH_VERSION=$(bash --version | grep -m 1 "version" | awk '{print $4}')
+	echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
+	echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
+	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION"
+	echo -e "\n${CSBlu}This script has been tested on: \n${CBlu}Kali Linux, Linux Mint, Debian Linux, Deepin Linux"
+	func_detect_system
+
+	read -p "Press [Enter] key to continue..." -r
 }
 
 # Check for updates
@@ -388,7 +421,8 @@ func_scan_network()
         nmap)           SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-);;
         arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-        arp)            SCAN_RESULT=$(arp -eni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}')
+        arp)            fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
+						SCAN_RESULT=$(arp -eni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}')
     esac
 
     # Exclude gateway IP and your own IP from the list
@@ -528,10 +562,12 @@ start_interactive_mode()
     # Trap func_cleanup so that it will be called if CTRL+C is fired or when script is killed
     trap func_cleanup SIGINT SIGTERM SIGKILL
 
+
     while true
     do
         # Print header
         func_header
+
         echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select Network Interface:${CClr}\n"
 
         # Iterate all interface that connected to a network
@@ -582,6 +618,9 @@ start_interactive_mode()
     # Selected network
     NETWORK=$(echo $SELECTED_IFACE | cut -d '(' -f2 | cut -d ')' -f1)
 
+	# Display information
+	func_display_info
+
     # Prompt MAC Address randomization
     while true
     do
@@ -622,7 +661,8 @@ start_interactive_mode()
     do
         func_header
 
-        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select host scanner:\n"
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select host scanner:"
+		echo -e "${CGrn}[${CBYel}!${CGrn}] ${CCyn}Slow network connection may affect to scan result\n"
         echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fast${CYel}) ${CGrn}(${CYel}default${CGrn})"
         echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
@@ -832,7 +872,7 @@ func_check_prerequires
 
 echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
 
-func_check_updates $@
+#func_check_updates $@
 
 echo -e ""
 
