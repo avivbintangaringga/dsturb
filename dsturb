@@ -558,7 +558,7 @@ start_interactive_mode()
 
             case $SCAN_AGAIN in
                 N|n) func_cleanup ;;
-                *) start_interactive_mode ;;
+                *) continue ;;
             esac
         fi
 
