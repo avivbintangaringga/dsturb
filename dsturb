@@ -128,13 +128,9 @@ func_check_updates()
 
         echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Updates done!${CClr}"
         echo -e ""
-        echo -ne "${CYel}Do you want to relaunch now? [${CBGrn}Y${CYel}/${CRed}n${CYel}]: ${CYel}"
-        read RELAUNCH_PROMPT
-
-        case $RELAUNCH_PROMPT in
-            n|N) exit ;;
-            *) echo -e "\n${CGrn}[${CYel}*${CGrn}]${CYel} Relaunching...${CClr}\n" && dsturb $@ && exit;;
-        esac
+        echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Relaunching...${CClr}\n"
+        dsturb $@
+        exit $?
     else
         echo -e "${CYel}no updates detected!${CClr}"
     fi
