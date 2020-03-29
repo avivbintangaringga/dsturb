@@ -872,7 +872,7 @@ func_check_prerequires
 
 echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
 
-#func_check_updates $@
+func_check_updates $@
 
 echo -e ""
 
