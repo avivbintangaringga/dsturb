@@ -19,7 +19,7 @@
 #
 
 # Required packages for script to run
-REQUIREMENTS="arpspoof:dsniff macchanger tc:iproute dhclient:isc-dhcp-client ifconfig:net-tools nmap wget arp-scan netdiscover"
+REQUIREMENTS="arpspoof:dsniff macchanger tc:iproute dhclient:isc-dhcp-client ifconfig:net-tools nmap wget arp-scan netdiscover fping arp:net-tools"
 
 # Script version
 VERSION=$(cat /usr/share/dsturb/version)
@@ -150,7 +150,7 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-	echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover"
+	echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover, arp"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
     echo -e "         -h  --help                        Display help"
@@ -379,6 +379,8 @@ func_scan_network()
 {
     func_header
 
+    unset HOSTS
+
 	# Print host length warning
 	[[ $CIDR -lt 22 ]] && echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} Large network detected, this scan may take minutes or hours${CClr}"
 
@@ -390,6 +392,7 @@ func_scan_network()
         nmap)           SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-);;
         arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+        arp)            SCAN_RESULT=$(arp -eni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}')
     esac
 
     # Exclude gateway IP and your own IP from the list
@@ -478,12 +481,23 @@ func_start_attack()
     do
         sleep $RESCANNING_DELAY  # Nmap scan can interfere with arpspoof, so don't do it too often
 
+        tput sc
+        echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Scanning for new target...${CClr}"
+
+        unset NEW_SCAN
+
         case $HOST_SCANNER in
             nmap)           NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-);;
             arp-scan)       NEW_SCAN=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
             netdiscover)    NEW_SCAN=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+            arp)            fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
+                            NEW_SCAN=$(arp -eni $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
         esac
 
+        tput rc
+        tput el
+
+        FOUND_NEW_TARGET=false
         while read -r RESULT
         do
             IP=$(echo $RESULT | cut -d '(' -f2 | cut -d ')' -f1)
@@ -496,8 +510,17 @@ func_start_attack()
                 arpspoof -rt $IP $GATEWAY > /dev/null 2>&1 &
                 [[ $FORWARD_TRAFFIC == true && $RATE_LIMIT != "Unlimited" ]] && func_add_rate_limit_target $IP
                 TARGET_IP="$TARGET_IP $IP"
+                FOUND_NEW_TARGET=true
             fi
         done < <(echo "$NEW_SCAN")
+
+        if ! $FOUND_NEW_TARGET
+        then
+            echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} No new target found!${CClr}"
+            sleep 2
+            tput rc
+            tput el
+        fi
     done
 }
 
@@ -535,7 +558,7 @@ start_interactive_mode()
 
             case $SCAN_AGAIN in
                 N|n) func_cleanup ;;
-                *) func_select_interface ;;
+                *) start_interactive_mode ;;
             esac
         fi
 
@@ -604,9 +627,10 @@ start_interactive_mode()
         func_header
 
         echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select host scanner:\n"
-        echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fastest${CYel}) ${CGrn}(${CYel}default${CGrn})"
-		echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
+        echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fast${CYel}) ${CGrn}(${CYel}default${CGrn})"
+        echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
+        echo -e "    ${CGrn}4${CYel}) ARP table     (${CGrn}fastest${CYel}) (${CRed}less reliable${CYel})"
         echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
         read -n1 HOST_SCANNER_PROMPT
 
@@ -614,9 +638,34 @@ start_interactive_mode()
             1) HOST_SCANNER=arp-scan; break ;;
             2) HOST_SCANNER=nmap; break ;;
             3) HOST_SCANNER=netdiscover; break ;;
+            4) HOST_SCANNER=arp; break ;;
             *) [[ -z $HOST_SCANNER_PROMPT ]] && HOST_SCANNER=arp-scan && break; echo -e "\n\n${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid input!${CClr}"; sleep 2 ;;
         esac
     done
+
+    if [[ $HOST_SCANNER == "arp" ]]
+    then
+        while true
+        do
+            func_header
+
+            echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} In order to use ARP table, you must do a ping sweep at least once.${CClr}"
+            echo -e "${CGrn}[${CYel}?${CGrn}]${CYel} Do you want to perform it now?\n${CClr}"
+            echo -e "    ${CGrn}1${CYel}) Yes"
+            echo -e "    ${CGrn}2${CYel}) No (${CGrn}default${CYel})"
+            echo -ne "\n${CGrn}[${CYel}Select${CGrn}]${CYel}: "
+            read -n1 PING_SWEEP_PROMPT
+
+            case $PING_SWEEP_PROMPT in
+                1) func_header
+                   echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Running ping sweep. Please be patient...${CClr}"
+                   fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
+                   break ;;
+                2) break ;;
+                *) [[ -z $PING_SWEEP_PROMPT ]] && break; echo -e "\n\n${CGrn}[${CBRed}!${CGrn}]${CYel} Invalid input!${CClr}"; sleep 2 ;;
+            esac
+         done
+    fi
 
     while true
     do
@@ -830,7 +879,7 @@ then
     exit 1
 fi
 
-[[ $HOST_SCANNER != nmap && $HOST_SCANNER != arp-scan && $HOST_SCANNER != netdiscover ]] && func_help && exit 1
+[[ $HOST_SCANNER != nmap && $HOST_SCANNER != arp-scan && $HOST_SCANNER != netdiscover && $HOST_SCANNER != arp ]] && func_help && exit 1
 
 # Loop through all IP Addresses to validate IP Address format
 [[ ! -z $EXCLUDED_IP ]] && EXCLUDED_IP=$(echo "$EXCLUDED_IP" | tr ',' ' ') && for IP in "$EXCLUDED_IP"
