@@ -87,14 +87,6 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
-COMPATIBLE_DISTROS=(
-	"Kali"
-	"Mint"
-	"Debian"
-	"Deepin"
-	"Ubuntu"
-)
-
 printtitle()
 {
     local COLS="$(tput cols)"
@@ -124,11 +116,14 @@ func_display_info()
 {
 
 	func_header
+
 	BASH_VERSION=$(bash --version | grep -m 1 "version" | awk '{print $4}')
+
 	echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
 	echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
 	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION"
 	echo -e "\n${CSBlu}This script has been tested on: \n${CBlu}Kali Linux, Linux Mint, Debian Linux, Deepin Linux"
+
 	func_detect_system
 
 	read -p "Press [Enter] key to continue..." -r
