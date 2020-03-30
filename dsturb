@@ -126,7 +126,7 @@ echo_compatible_distros()
 	LAST="${COMPATIBLE_DISTROS[-1]}"
 	unset COMPATIBLE_DISTROS[-1]
 	printf "%s, " "${COMPATIBLE_DISTROS[@]}"
-	echo -n $LAST
+	echo -e "$LAST"
 }
 
 func_display_info()
