@@ -87,6 +87,14 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
+declare -a COMPATIBLE_DISTROS=(
+		"Kali Linux"
+		"Mint Linux" 
+		"Deepin Linux" 
+		"Debian Linux"
+		"Ubuntu Linux"
+)
+
 printtitle()
 {
     local COLS="$(tput cols)"
@@ -112,6 +120,15 @@ func_detect_system()
 	echo -e "${CYel}$DISTRO${CClr}\n"
 }
 
+echo_compatible_distros() 
+{ 
+
+	LAST="${COMPATIBLE_DISTROS[-1]}"
+	unset COMPATIBLE_DISTROS[-1]
+	printf "%s, " "${COMPATIBLE_DISTROS[@]}"
+	echo -n $LAST
+}
+
 func_display_info()
 {
 
@@ -122,7 +139,9 @@ func_display_info()
 	echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
 	echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
 	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION"
-	echo -e "\n${CSBlu}This script has been tested on : \n${CBlu}Kali Linux, Linux Mint, Debian Linux, Deepin Linux"
+	echo -e "\n${CSBlu}This script has been tested on : ${CBlu}"
+
+	echo_compatible_distros
 
 	func_detect_system
 
