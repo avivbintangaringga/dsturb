@@ -89,7 +89,7 @@ readonly CBWht="\e[5;37m"
 
 declare -a TESTED_DISTROS=(
     "Kali Linux 2019.3"
-    "Linux Mint"
+    "Linux Mint 19.1"
     "Deepin 15" 
     "Debian 10"
 )
