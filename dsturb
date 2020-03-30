@@ -885,9 +885,29 @@ func_check_prerequires
 #    exit 1
 #fi
 
+# Default values
+[[ -z $CHECK_UPDATE ]] && CHECK_UPDATE=true
+[[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
+[[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
+[[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
+
 # Get all options
 OPTIONS=$(getopt -l "help,connect,disconnect,randomize,no-update,scanner:,exclude:,limit:" -o "Nhcdrs:e:L:" -a -- "$@")
 eval set -- "$OPTIONS"
+
+# I have to check this option here, 
+# Because only this option is used before starting the script
+case $1 in 
+	-N|--no-update) CHECK_UPDATE=false; break ;;
+esac
+shift
+
+echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
+[[ $CHECK_UPDATE == true ]] && func_check_updates $@
+echo -e ""
+
+# If no argument is given, then run interactive mode
+[[ -z $1 ]] && start_interactive_mode
 
 # Loop each options and add a flag
 while true
@@ -899,27 +919,11 @@ do
         -r|--randomize) RANDOMIZE_MAC=true ;;
         -e|--exclude) shift; [[ -z $1 ]] && func_help && exit 1; EXCLUDED_IP=$1;;
         -L|--limit) shift; [[ -z $1 ]] && func_help && exit 1; RATE_LIMIT=$1;;
-		-N|--no-update) CHECK_UPDATE=false ;;
         -h|--help) func_help && exit 0 ;;
         --) shift; [[ -z $1 ]] && func_help && exit 1; INTERFACE=$1; break;;
     esac
     shift
 done
-
-# Default values
-[[ -z $CHECK_UPDATE ]] && CHECK_UPDATE=true
-[[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
-[[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
-[[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
-
-echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
-
-[[ $CHECK_UPDATE == true ]] && func_check_updates $@
-
-echo -e ""
-
-# If no argument is given, then run interactive mode
-[[ -z $1 ]] && start_interactive_mode
 
 # Check for interface availability
 [[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't exist!${CClr}\n" && exit 1
