@@ -87,12 +87,11 @@ readonly CBCyn="\e[5;36m"
 readonly CBGry="\e[5;37m"
 readonly CBWht="\e[5;37m"
 
-declare -a COMPATIBLE_DISTROS=(
-		"Kali Linux"
-		"Mint Linux" 
-		"Deepin Linux" 
-		"Debian Linux"
-		"Ubuntu Linux"
+declare -a TESTED_DISTROS=(
+    "Kali Linux 2019.3"
+    "Linux Mint"
+    "Deepin 15" 
+    "Debian 10"
 )
 
 printtitle()
@@ -111,41 +110,39 @@ printtitle()
 
 func_detect_system()
 {
-	DISTRO="Unknown"
-	CHECK_DISTRO=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed 's/"//g' )
+    DISTRO="Unknown"
+    CHECK_DISTRO=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed 's/"//g' )
 
-	[[ ! -z $CHECK_DISTRO ]] && DISTRO=$CHECK_DISTRO
+    [[ ! -z $CHECK_DISTRO ]] && DISTRO=$CHECK_DISTRO
 
-	echo -e "\n${CSYel}Detecting your system :"
-	echo -e "${CYel}$DISTRO${CClr}\n"
+    echo -e "\n${CSYel}Detecting your system :"
+    echo -e "${CYel}$DISTRO${CClr}\n"
 }
 
 echo_compatible_distros() 
 { 
-
-	LAST="${COMPATIBLE_DISTROS[-1]}"
-	unset COMPATIBLE_DISTROS[-1]
-	printf "%s, " "${COMPATIBLE_DISTROS[@]}"
-	echo -e "$LAST"
+    LAST="${TESTED_DISTROS[-1]}"
+    unset TESTED_DISTROS[-1]
+    printf "%s, " "${TESTED_DISTROS[@]}"
+    echo -e "$LAST"
 }
 
 func_display_info()
 {
+    func_header
 
-	func_header
+    BASH_VERSION=$(bash --version | grep -m 1 "version" | awk '{print $4}')
 
-	BASH_VERSION=$(bash --version | grep -m 1 "version" | awk '{print $4}')
+    echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
+    echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
+    echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION (recommended : 4.2 or later)"
+    echo -e "\n${CSBlu}This script has been tested on : ${CBlu}"
 
-	echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
-	echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
-	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION (recommended : 4.2 or later)"
-	echo -e "\n${CSBlu}This script has been tested on : ${CBlu}"
+    echo_compatible_distros
 
-	echo_compatible_distros
+    func_detect_system
 
-	func_detect_system
-
-	read -p "Press [Enter] key to continue..." -r
+    read -p "Press [Enter] key to continue..." -r
 }
 
 # Check for updates
@@ -193,10 +190,9 @@ func_help()
     echo -e "         -c  --connect                     Enable internet access on target"
     echo -e "         -d  --disconnect                  Disable internet access on target"
     echo -e "         -r  --randomize                   Randomize interface's MAC Address"
-	echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover, arp"
+    echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover, arp"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
-    echo -e "         -N  --no-update                   Disable checking for updates"
     echo -e "         -h  --help                        Display help"
     echo -e " "
     echo -e "     Supported rate limit units:"
@@ -295,8 +291,8 @@ func_check_prerequires()
     NOT_INSTALLED=false
 
     # Loop through each required packages
-	for REQ in $REQUIREMENTS
-	do
+    for REQ in $REQUIREMENTS
+    do
         # Check if requirements is installed with 'hash' command 
         # Exit code should be 0 if it is installed and 1 if it isn't
         COMMAND=$(echo $REQ | cut -d ':' -f1)
@@ -418,6 +414,18 @@ func_rate_limit()
     done
 }
 
+func_scan_new_hosts()
+{
+    unset SCAN_RESULT
+    case $HOST_SCANNER in
+        nmap)           SCAN_RESULT=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-);;
+        arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+        netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
+        arp)            fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
+                        SCAN_RESULT=$(arp -eni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}')
+    esac
+}
+
 # Scan network
 func_scan_network()
 {
@@ -425,20 +433,14 @@ func_scan_network()
 
     unset HOSTS
 
-	# Print host length warning
-	[[ $CIDR -lt 22 ]] && echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} Large network detected, this scan may take minutes or hours${CClr}"
+    # Print host length warning
+    [[ $CIDR -lt 22 ]] && echo -e "${CGrn}[${CBRed}!${CGrn}]${CYel} Large network detected, this scan may take minutes or hours${CClr}"
 
     echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Host scanner: ${CGrn}$HOST_SCANNER${CYel}...${CClr}"
     echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Scanning network ${CGrn}$NETWORK${CYel}...${CClr}"
 
     # Scan all available IP Address in then network
-    case $HOST_SCANNER in
-        nmap)           SCAN_RESULT=$(nmap -sn $NETWORK | grep "for" | cut -d ' ' -f 5-);;
-        arp-scan)       SCAN_RESULT=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-        netdiscover)    SCAN_RESULT=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-        arp)            fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
-						SCAN_RESULT=$(arp -eni $INTERFACE  | awk '/.*:.*:.*:.*:.*:.*/{print $1}')
-    esac
+    func_scan_new_hosts
 
     # Exclude gateway IP and your own IP from the list
     for IP in $(echo "$GATEWAY $MY_IP")
@@ -529,15 +531,7 @@ func_start_attack()
         tput sc
         echo -e "${CGrn}[${CYel}$(date '+%T')${CGrn}]${CYel} Scanning for new target...${CClr}"
 
-        unset NEW_SCAN
-
-        case $HOST_SCANNER in
-            nmap)           NEW_SCAN=$(nmap -sn $NETWORK --disable-arp-ping | grep "for" | cut -d ' ' -f 5-);;
-            arp-scan)       NEW_SCAN=$(arp-scan -g -N -r 1 -l -I $INTERFACE | grep -A 99999999 "Starting" | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-            netdiscover)    NEW_SCAN=$(netdiscover -Pi $INTERFACE -r $NETWORK | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-            arp)            fping -q -i 1 -r 0 -g $NETWORK > /dev/null 2>&1
-                            NEW_SCAN=$(arp -eni $INTERFACE | awk '/.*:.*:.*:.*:.*:.*/{print $1}');;
-        esac
+        func_scan_new_hosts
 
         tput rc
         tput el
@@ -557,7 +551,7 @@ func_start_attack()
                 TARGET_IP="$TARGET_IP $IP"
                 FOUND_NEW_TARGET=true
             fi
-        done < <(echo "$NEW_SCAN")
+        done < <(echo "$SCAN_RESULT")
 
         if ! $FOUND_NEW_TARGET
         then
@@ -633,8 +627,8 @@ start_interactive_mode()
     # Selected network
     NETWORK=$(echo $SELECTED_IFACE | cut -d '(' -f2 | cut -d ')' -f1)
 
-	# Display information
-	func_display_info
+    # Display information
+    func_display_info
 
     # Prompt MAC Address randomization
     while true
@@ -665,11 +659,11 @@ start_interactive_mode()
     # Get gateway IP of interface
     GATEWAY=$(route -n | grep -w $INTERFACE | awk '{print $2}' | grep -v "0.0.0.0")
 
-	# Store CIDR from the given gateway
-	CIDR=$(echo $NETWORK | cut -d "/" -f2)
+    # Store CIDR from the given gateway
+    CIDR=$(echo $NETWORK | cut -d "/" -f2)
 
     # Just turn to <gateway>/<cidr> format, not really important
-	NETWORK="$GATEWAY/$CIDR"
+    NETWORK="$GATEWAY/$CIDR"
 
     # Select Host Discovery method
     while true
@@ -677,7 +671,7 @@ start_interactive_mode()
         func_header
 
         echo -e "${CGrn}[${CYel}*${CGrn}]${CYel} Select host scanner:"
-		echo -e "${CGrn}[${CBYel}!${CGrn}] ${CCyn}Slow network connection may affect to scan result\n"
+        echo -e "${CGrn}[${CBYel}!${CGrn}] ${CCyn}Slow network connection may affect to scan result\n"
         echo -e "    ${CGrn}1${CYel}) Arp-scan      (${CGrn}fast${CYel}) ${CGrn}(${CYel}default${CGrn})"
         echo -e "    ${CGrn}2${CYel}) Nmap          (${CGrn}most reliable${CYel}) (${CRed}slow on large network${CYel})"
         echo -e "    ${CGrn}3${CYel}) Netdiscover   (${CGrn}slightly faster${CYel})"
@@ -740,7 +734,7 @@ start_interactive_mode()
             let 'INDEX++'
         done
 
-		echo -e "   ${CGrn}*${CYel})  All Addresses (${CGrn}default${CYel})${CClr}\n"
+        echo -e "   ${CGrn}*${CYel})  All Addresses (${CGrn}default${CYel})${CClr}\n"
         echo -e " ${CGrn}r|R${CYel})  Rescan${CClr}\n"
         echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
         read SELECT_IP
@@ -878,36 +872,16 @@ fi
 # Call function to check package requirements
 func_check_prerequires
 
-# Check network connection
-#if ! ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 2>&1
-#then
-#    echo -e "\n[!] Please check your network connection!\n"
-#    exit 1
-#fi
-
-# Default values
-[[ -z $CHECK_UPDATE ]] && CHECK_UPDATE=true
-[[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
-[[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
-[[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
-
-# Get all options
-OPTIONS=$(getopt -l "help,connect,disconnect,randomize,no-update,scanner:,exclude:,limit:" -o "Nhcdrs:e:L:" -a -- "$@")
-eval set -- "$OPTIONS"
-
-# I have to check this option here, 
-# Because only this option is used before starting the script
-case $1 in 
-	-N|--no-update) CHECK_UPDATE=false; break ;;
-esac
-shift
-
 echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
-[[ $CHECK_UPDATE == true ]] && func_check_updates $@
+func_check_updates $@
 echo -e ""
 
 # If no argument is given, then run interactive mode
 [[ -z $1 ]] && start_interactive_mode
+
+# Get all options
+OPTIONS=$(getopt -l "help,connect,disconnect,randomize,scanner:,exclude:,limit:" -o "hcdrs:e:L:" -a -- "$@")
+eval set -- "$OPTIONS"
 
 # Loop each options and add a flag
 while true
@@ -924,6 +898,11 @@ do
     esac
     shift
 done
+
+# Default values
+[[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
+[[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
+[[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
 
 # Check for interface availability
 [[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't exist!${CClr}\n" && exit 1
