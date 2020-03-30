@@ -138,7 +138,7 @@ func_display_info()
 
 	echo -e "${CSGrn}Welcome to the Dsturb script${CClr}\n"
 	echo -e "${CSPrp}This script is only for educational purposes.\nUse it on your own network or within network administrator permission.${CClr}"
-	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION"
+	echo -e "\n${CSGrn}Installed bash version on your machine : \n${CGrn}$BASH_VERSION (recommended : 4.2 or later)"
 	echo -e "\n${CSBlu}This script has been tested on : ${CBlu}"
 
 	echo_compatible_distros
@@ -196,6 +196,7 @@ func_help()
 	echo -e "         -s  --scanner   [scanner]         Host scanner: arp-scan (default), nmap, netdiscover, arp"
     echo -e "         -e  --exclude   [IP,IP,IP,...]    Exclude the following IP Addresses"
     echo -e "         -L  --limit     [rate-limit]      Limit bandwith for target"
+    echo -e "         -N  --no-update                   Disable checking for updates"
     echo -e "         -h  --help                        Display help"
     echo -e " "
     echo -e "     Supported rate limit units:"
@@ -739,7 +740,7 @@ start_interactive_mode()
             let 'INDEX++'
         done
 
-        echo -e "   ${CGrn}*${CYel})  All Addresses${CClr}\n"
+		echo -e "   ${CGrn}*${CYel})  All Addresses (${CGrn}default${CYel})${CClr}\n"
         echo -e " ${CGrn}r|R${CYel})  Rescan${CClr}\n"
         echo -ne "${CGrn}[${CYel}Select${CGrn}]${CYel}: "
         read SELECT_IP
@@ -884,17 +885,8 @@ func_check_prerequires
 #    exit 1
 #fi
 
-echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
-
-func_check_updates $@
-
-echo -e ""
-
-# If no argument is given, then run interactive mode
-[[ -z $1 ]] && start_interactive_mode
-
 # Get all options
-OPTIONS=$(getopt -l "help,connect,disconnect,randomize,scanner:,exclude:,limit:" -o "hcdrs:e:L:" -a -- "$@")
+OPTIONS=$(getopt -l "help,connect,disconnect,randomize,no-update,scanner:,exclude:,limit:" -o "Nhcdrs:e:L:" -a -- "$@")
 eval set -- "$OPTIONS"
 
 # Loop each options and add a flag
@@ -907,6 +899,7 @@ do
         -r|--randomize) RANDOMIZE_MAC=true ;;
         -e|--exclude) shift; [[ -z $1 ]] && func_help && exit 1; EXCLUDED_IP=$1;;
         -L|--limit) shift; [[ -z $1 ]] && func_help && exit 1; RATE_LIMIT=$1;;
+		-N|--no-update) CHECK_UPDATE=false ;;
         -h|--help) func_help && exit 0 ;;
         --) shift; [[ -z $1 ]] && func_help && exit 1; INTERFACE=$1; break;;
     esac
@@ -914,9 +907,19 @@ do
 done
 
 # Default values
+[[ -z $CHECK_UPDATE ]] && CHECK_UPDATE=true
 [[ -z $FORWARD_TRAFFIC ]] && FORWARD_TRAFFIC=true
 [[ -z $RANDOMIZE_MAC ]] && RANDOMIZE_MAC=false
 [[ -z $HOST_SCANNER ]] && HOST_SCANNER=arp-scan
+
+echo -e "\n${CSGrn}dsturb${CYel} version ${CRed}$VERSION${CClr}\n"
+
+[[ $CHECK_UPDATE == true ]] && func_check_updates $@
+
+echo -e ""
+
+# If no argument is given, then run interactive mode
+[[ -z $1 ]] && start_interactive_mode
 
 # Check for interface availability
 [[ ! -d /sys/class/net/$INTERFACE ]] && echo -e "\n${CGrn}[${CBRed}!${CGrn}]${CYel} Interface \"${CRed}$INTERFACE${CYel}\" doesn't exist!${CClr}\n" && exit 1
